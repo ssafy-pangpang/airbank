@@ -9,7 +9,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.pangpang.airbank.global.error.exception.AuthException;
 import com.pangpang.airbank.global.error.info.AuthErrorInfo;
-import com.pangpang.airbank.global.resolver.dto.AuthenticatedMember;
+import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -34,6 +34,6 @@ public class AuthenticationArgumentResolver implements HandlerMethodArgumentReso
 		}
 
 		Long memberId = Long.valueOf(String.valueOf(sessionMemberId));
-		return new AuthenticatedMember(memberId);
+		return new AuthenticatedMemberArgument(memberId);
 	}
 }

@@ -10,7 +10,7 @@ import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
 import com.pangpang.airbank.domain.member.service.MemberService;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
-import com.pangpang.airbank.global.resolver.dto.AuthenticatedMember;
+import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +24,12 @@ public class MemberController {
 
 	@GetMapping()
 	private ResponseEntity<EnvelopeResponse<GetMemberResponseDto>> getMember(HttpServletRequest request,
-		@Authentication AuthenticatedMember authenticatedMember) {
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
 
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<GetMemberResponseDto>builder()
 				.code(HttpStatus.OK.value())
-				.data(memberService.getMember(authenticatedMember.getMemberId()))
+				.data(memberService.getMember(authenticatedMemberArgument.getMemberId()))
 				.build());
 
 	}

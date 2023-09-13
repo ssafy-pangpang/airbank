@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticatedMember {
+public class AuthenticatedMemberArgument {
 	private Long memberId;
 
 }
