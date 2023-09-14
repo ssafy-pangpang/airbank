@@ -5,6 +5,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import com.pangpang.airbank.domain.member.domain.Member;
+import com.pangpang.airbank.global.meta.domain.MemberRole;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -55,4 +56,11 @@ public class MemberRelationship {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_member_relationship_to_member_parent_id"))
 	private Member parent;
+
+	public Member getPartnerMember(Member member) {
+		if (member.getRole().getName().equals(MemberRole.PARENT.getName())) {
+			return this.getChild();
+		}
+		return this.getParent();
+	}
 }
