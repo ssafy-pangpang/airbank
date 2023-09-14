@@ -39,3 +39,6 @@ out/
 ### Application Setting Files
 src/main/resources/application-dev.yml
 src/main/resources/application-prob.yml
+
+### Mock SQL Files
+src/main/resources/data.sql
