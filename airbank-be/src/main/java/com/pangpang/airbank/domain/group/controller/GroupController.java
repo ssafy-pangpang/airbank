@@ -3,12 +3,15 @@ package com.pangpang.airbank.domain.group.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pangpang.airbank.domain.group.dto.GetPartnersResponseDto;
+import com.pangpang.airbank.domain.group.dto.PatchConfirmRequestDto;
 import com.pangpang.airbank.domain.group.dto.PostEnrollChildRequestDto;
 import com.pangpang.airbank.domain.group.service.GroupService;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
@@ -44,6 +47,18 @@ public class GroupController {
 			.body(EnvelopeResponse.<Long>builder()
 				.code(HttpStatus.CREATED.value())
 				.data(groupService.enrollChild(member.getMemberId(), postEnrollChildRequestDto))
+				.build());
+	}
+
+	@PatchMapping("/confirm")
+	public ResponseEntity<EnvelopeResponse<Long>> confirmEnrollment(
+		@RequestBody PatchConfirmRequestDto patchConfirmRequestDto, @RequestParam Long groupId) {
+		AuthenticatedMemberArgument member = new AuthenticatedMemberArgument(2L);
+
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<Long>builder()
+				.code(HttpStatus.OK.value())
+				.data(groupService.confirmEnrollment(member.getMemberId(), patchConfirmRequestDto, groupId))
 				.build());
 	}
 }

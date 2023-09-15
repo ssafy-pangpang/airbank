@@ -1,6 +1,7 @@
 package com.pangpang.airbank.domain.group.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,14 +22,7 @@ public interface MemberRelationshipRepository extends JpaRepository<MemberRelati
 		+ "where m.child.id = :childId and m.activated = true ")
 	List<MemberRelationship> findAllByChildIdWithParentAsActive(@Param("childId") Long childId);
 
-	@Query("select case when count(m) > 0 then true else false end "
-		+ "from member_relationship m "
-		+ "where m.child.id = :childId and m.activated = true ")
-	Boolean existsByChildIdAsActive(@Param("childId") Long childId);
+	Optional<MemberRelationship> findByIdAndChildId(Long id, Long childId);
 
-	@Query("select case when count(m) > 0 then true else false end "
-		+ "from member_relationship m "
-		+ "where m.child.id = :childId and m.activated = false ")
-	Boolean existsByChildIdAsNoneActive(@Param("childId") Long childId);
-
+	Optional<MemberRelationship> findByChildId(Long childId);
 }

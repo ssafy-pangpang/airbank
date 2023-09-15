@@ -70,4 +70,8 @@ public class MemberRelationship {
 		}
 		return this.getParent();
 	}
+
+	public void setActivated(Boolean activated) {
+		this.activated = activated;
+	}
 }
