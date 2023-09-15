@@ -57,6 +57,13 @@ public class MemberRelationship {
 	@JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_member_relationship_to_member_parent_id"))
 	private Member parent;
 
+	public static MemberRelationship of(Member parentMember, Member childMember) {
+		return MemberRelationship.builder()
+			.parent(parentMember)
+			.child(childMember)
+			.build();
+	}
+
 	public Member getPartnerMember(Member member) {
 		if (member.getRole().getName().equals(MemberRole.PARENT.getName())) {
 			return this.getChild();
