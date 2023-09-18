@@ -25,4 +25,6 @@ public interface MemberRelationshipRepository extends JpaRepository<MemberRelati
 	Optional<MemberRelationship> findByIdAndChildId(Long id, Long childId);
 
 	Optional<MemberRelationship> findByChildId(Long childId);
+
+	Optional<MemberRelationship> findByIdAndParentId(Long id, Long parentId);
 }

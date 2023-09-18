@@ -3,6 +3,7 @@ package com.pangpang.airbank.domain.fund.domain;
 import org.hibernate.annotations.ColumnDefault;
 
 import com.pangpang.airbank.domain.group.domain.MemberRelationship;
+import com.pangpang.airbank.domain.group.dto.CommonFundManagementRequestDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -66,4 +67,24 @@ public class FundManagement {
 	@JoinColumn(name = "member_relationship_id",
 		foreignKey = @ForeignKey(name = "fk_fund_management_to_member_relationship_member_relationship_id"))
 	private MemberRelationship memberRelationship;
+
+	public void updateFundManagement(CommonFundManagementRequestDto commonFundManagementRequestDto) {
+		this.taxRate = commonFundManagementRequestDto.getTaxRate();
+		this.allowanceAmount = commonFundManagementRequestDto.getAllowanceAmount();
+		this.allowanceDate = commonFundManagementRequestDto.getAllowanceDate();
+		this.confiscationRate = commonFundManagementRequestDto.getConfiscationRate();
+		this.loanLimit = commonFundManagementRequestDto.getLoanLimit();
+	}
+
+	public static FundManagement of(MemberRelationship memberRelationship,
+		CommonFundManagementRequestDto commonFundManagementRequestDto) {
+		return FundManagement.builder()
+			.taxRate(commonFundManagementRequestDto.getTaxRate())
+			.allowanceAmount(commonFundManagementRequestDto.getAllowanceAmount())
+			.allowanceDate(commonFundManagementRequestDto.getAllowanceDate())
+			.confiscationRate(commonFundManagementRequestDto.getConfiscationRate())
+			.loanLimit(commonFundManagementRequestDto.getLoanLimit())
+			.memberRelationship(memberRelationship)
+			.build();
+	}
 }
