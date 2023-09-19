@@ -5,6 +5,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import com.pangpang.airbank.domain.BaseTimeEntity;
+import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
 import com.pangpang.airbank.global.meta.converter.MemberRoleConverter;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
 
@@ -63,7 +64,24 @@ public class Member extends BaseTimeEntity {
 	private Boolean deleted = Boolean.FALSE;
 
 	@NotNull
+	@Builder.Default
+	@ColumnDefault("'UNKNOWN'")
 	@Column(length = 20)
 	@Convert(converter = MemberRoleConverter.class)
-	private MemberRole role;
+	private MemberRole role = MemberRole.UNKNOWN;
+
+	public static Member of(PostLoginRequestDto postLoginRequestDto) {
+		return Member.builder()
+			.oauthIdentifier(postLoginRequestDto.getId())
+			.imageUrl(getImageUrl(postLoginRequestDto.getKakaoAccount().getProfile().getProfileImageUrl(),
+				postLoginRequestDto.getKakaoAccount().getProfile().getIsDefaultImage()))
+			.build();
+	}
+
+	private static String getImageUrl(String profileImageUrl, Boolean isDefaultImage) {
+		if (isDefaultImage) {
+			return null;
+		}
+		return profileImageUrl;
+	}
 }

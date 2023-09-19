@@ -3,6 +3,8 @@ package com.pangpang.airbank.domain;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -17,12 +19,12 @@ import lombok.Getter;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseTimeEntity {
 
-	@CreatedDate
+	@CreationTimestamp
 	@ColumnDefault("CURRENT_TIMESTAMP")
 	@Column(updatable = false, nullable = false)
 	private LocalDateTime createdAt;
 
-	@LastModifiedDate
+	@UpdateTimestamp
 	@ColumnDefault("CURRENT_TIMESTAMP")
 	@Column(nullable = false)
 	private LocalDateTime updatedAt;
