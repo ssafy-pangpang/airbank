@@ -10,7 +10,8 @@ import lombok.Getter;
 @Getter
 public enum MemberRole {
 	PARENT(1, "PARENT"),
-	CHILD(2, "CHILD");
+	CHILD(2, "CHILD"),
+	UNKNOWN(3, "UNKNOWN");
 
 	private final Integer id;
 	private final String name;

@@ -14,4 +14,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	@Query("select m from member m "
 		+ "where m.phoneNumber = :phoneNumber and m.role = 'CHILD'")
 	Optional<Member> findByChildPhoneNumber(@Param("phoneNumber") String phoneNumber);
+
+	Optional<Member> findByOauthIdentifier(String oauthIdentifier);
 }
