@@ -11,4 +11,6 @@ public interface AuthService {
 	GetKakaoAccessTokenResponseDto getKakaoAccessToken(String code);
 
 	PostLoginRequestDto getKakaoProfile(String accessToken);
+
+	String getKakaoLogout(String oauthIdentifier);
 }

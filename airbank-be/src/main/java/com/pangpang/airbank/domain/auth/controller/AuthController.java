@@ -14,6 +14,7 @@ import com.pangpang.airbank.domain.auth.dto.GetLoginResponseDto;
 import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
 import com.pangpang.airbank.domain.auth.service.AuthService;
 import com.pangpang.airbank.domain.member.domain.Member;
+import com.pangpang.airbank.domain.member.dto.GetLoginMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
 import com.pangpang.airbank.domain.member.service.MemberService;
@@ -59,12 +60,13 @@ public class AuthController {
 
 		String accessToken = authService.getKakaoAccessToken(getLoginRequestDto.getCode()).getAccessToken();
 		PostLoginRequestDto postLoginRequestDto = authService.getKakaoProfile(accessToken);
-		Member member = memberService.getMemberByOauthIdentifier(postLoginRequestDto);
-		session.setAttribute("memberId", member.getId());
+		GetLoginMemberResponseDto getLoginMemberResponseDto
+			= memberService.getMemberByOauthIdentifier(postLoginRequestDto);
+		session.setAttribute("memberId", getLoginMemberResponseDto.getId());
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<GetLoginResponseDto>builder()
 				.code(HttpStatus.OK.value())
-				.data(new GetLoginResponseDto(member.getName(), member.getPhoneNumber()))
+				.data(getLoginMemberResponseDto.getGetLoginResponseDto())
 				.build());
 	}
 
@@ -77,15 +79,14 @@ public class AuthController {
 	@GetMapping("/logout")
 	public ResponseEntity<EnvelopeResponse<GetLogoutResponseDto>> logout(HttpServletRequest request,
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
-
-		// 카카오 로그아웃 기능 추가하기
+		String oauthIdentifier = memberService.getMemberOauthIdentifier(authenticatedMemberArgument.getMemberId());
+		authService.getKakaoLogout(oauthIdentifier);
 		request.getSession().invalidate();
 
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<GetLogoutResponseDto>builder()
 				.code(HttpStatus.OK.value())
-				.data(new GetLogoutResponseDto(
-					memberService.getMember(authenticatedMemberArgument.getMemberId()).getName()))
+				.data(memberService.getMemberName(authenticatedMemberArgument.getMemberId()))
 				.build());
 	}
 
