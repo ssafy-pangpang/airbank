@@ -9,6 +9,13 @@ public class GetLogoutResponseDto {
 	private String name;
 
 	public GetLogoutResponseDto(String name) {
-		this.name = name;
+		this.name = getName(name);
+	}
+
+	private String getName(String name) {
+		if (name == null) {
+			return "";
+		}
+		return name;
 	}
 }

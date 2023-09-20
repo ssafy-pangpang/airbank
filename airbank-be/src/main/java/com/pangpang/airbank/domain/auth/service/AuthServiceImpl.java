@@ -21,6 +21,7 @@ public class AuthServiceImpl implements AuthService {
 	private static final String KAKAO_URL = "https://kauth.kakao.com/oauth/authorize";
 	private static final String KAKAO_AUTH_URI = "https://kauth.kakao.com/oauth/token";
 	private static final String KAKAO_API_URI = "https://kapi.kakao.com/v2/user/me";
+	private static final String KAKAO_LOGOUT_URL = "https://kapi.kakao.com/v1/user/logout";
 
 	/**
 	 *  카카오 로그인 창 출력
@@ -61,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
 			throw new AuthException((AuthErrorInfo.INVALID_AUTH_CODE));
 		}
 
-		MultiValueMap<String, String> params = setParameters(code);
+		MultiValueMap<String, String> params = setAccessTokenParameters(code);
 		try {
 			return WebClient.create()
 				.post()
@@ -82,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
 	 * @param String code
 	 * @return map 형식으로 세팅된 파라미터
 	 */
-	private MultiValueMap<String, String> setParameters(String code) {
+	private MultiValueMap<String, String> setAccessTokenParameters(String code) {
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 
 		params.add("grant_type", "authorization_code");
@@ -113,5 +114,44 @@ public class AuthServiceImpl implements AuthService {
 		} catch (Exception e) {
 			throw new AuthException(AuthErrorInfo.AUTH_SERVER_ERROR);
 		}
+	}
+
+	/**
+	 *  카카오 로그아웃
+	 *
+	 * @param String oauthIdentifier
+	 * @return 리턴하는 값 설명
+	 */
+	@Override
+	public String getKakaoLogout(String oauthIdentifier) {
+		MultiValueMap<String, String> params = setLogoutParameters(oauthIdentifier);
+		try {
+			return WebClient.create()
+				.post()
+				.uri(KAKAO_LOGOUT_URL)
+				.header("Content-type", "application/x-www-form-urlencoded;charset=utf-8")
+				.header("Authorization", "KakaoAK " + authConstantProvider.getServiceAppAdminKey())
+				.bodyValue(params)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
+		} catch (Exception e) {
+			throw new AuthException(AuthErrorInfo.AUTH_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 *  로그아웃에 필요한 파라미터 세팅
+	 *
+	 * @param String oauthIdentifier
+	 * @return map 형식으로 세팅된 파라미터
+	 */
+	private MultiValueMap<String, String> setLogoutParameters(String oauthIdentifier) {
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+		params.add("target_id_type", "user_id");
+		params.add("target_id", oauthIdentifier);
+
+		return params;
 	}
 }

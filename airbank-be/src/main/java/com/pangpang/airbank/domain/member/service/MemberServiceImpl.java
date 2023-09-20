@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pangpang.airbank.domain.auth.dto.GetLoginResponseDto;
+import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
 import com.pangpang.airbank.domain.member.domain.Member;
+import com.pangpang.airbank.domain.member.dto.GetLoginMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
@@ -43,11 +46,12 @@ public class MemberServiceImpl implements MemberService {
 	 */
 	@Transactional(readOnly = true)
 	@Override
-	public Member getMemberByOauthIdentifier(PostLoginRequestDto postLoginRequestDto) {
+	public GetLoginMemberResponseDto getMemberByOauthIdentifier(PostLoginRequestDto postLoginRequestDto) {
 		Optional<Member> optionalMember = memberRepository.findByOauthIdentifier(postLoginRequestDto.getId());
 
 		if (optionalMember.isPresent()) {
-			return optionalMember.get();
+			return GetLoginMemberResponseDto.from(optionalMember.get().getId(),
+				new GetLoginResponseDto(optionalMember.get().getName(), optionalMember.get().getPhoneNumber()));
 		} else {
 			return saveMember(postLoginRequestDto);
 		}
@@ -61,10 +65,40 @@ public class MemberServiceImpl implements MemberService {
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
-	public Member saveMember(PostLoginRequestDto postLoginRequestDto) {
-		Member member = Member.of(postLoginRequestDto);
-		memberRepository.save(member);
-		return member;
+	public GetLoginMemberResponseDto saveMember(PostLoginRequestDto postLoginRequestDto) {
+		Member member = memberRepository.save(Member.of(postLoginRequestDto));
+		return GetLoginMemberResponseDto.from(member.getId(),
+			new GetLoginResponseDto(member.getName(), member.getPhoneNumber()));
+	}
+
+	/**
+	 *  사용자 oauth식별자 조회
+	 * 
+	 * @param Long memberId
+	 * @return 사용자의 oauthIdentifier
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public String getMemberOauthIdentifier(Long memberId) {
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
+
+		return member.getOauthIdentifier();
+	}
+
+	/**
+	 *  사용자 id 조회
+	 *
+	 * @param Long memberId
+	 * @return 사용자 id
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public GetLogoutResponseDto getMemberName(Long memberId) {
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
+
+		return new GetLogoutResponseDto(member.getName());
 	}
 
 }
