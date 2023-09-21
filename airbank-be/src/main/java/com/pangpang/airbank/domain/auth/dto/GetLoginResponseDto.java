@@ -1,5 +1,7 @@
 package com.pangpang.airbank.domain.auth.dto;
 
+import com.pangpang.airbank.domain.member.domain.Member;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,22 +11,10 @@ public class GetLoginResponseDto {
 	private String name;
 	private String phoneNumber;
 
-	public GetLoginResponseDto(String name, String phoneNumber) {
-		this.name = getName(name);
-		this.phoneNumber = getPhoneNumber(phoneNumber);
-	}
-
-	private String getName(String name) {
-		if (name == null) {
-			return "";
-		}
-		return name;
-	}
-
-	private String getPhoneNumber(String phoneNumber) {
-		if (phoneNumber == null) {
-			return "";
-		}
-		return phoneNumber;
+	public static GetLoginResponseDto from(Member member) {
+		return GetLoginResponseDto.builder()
+			.name(member.getName())
+			.phoneNumber(member.getPhoneNumber())
+			.build();
 	}
 }
