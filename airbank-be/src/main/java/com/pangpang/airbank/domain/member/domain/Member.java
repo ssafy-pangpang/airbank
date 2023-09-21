@@ -21,9 +21,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity(name = "member")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -83,5 +85,26 @@ public class Member extends BaseTimeEntity {
 			return null;
 		}
 		return profileImageUrl;
+	}
+
+	public String getName() {
+		if (name == null) {
+			return "";
+		}
+		return name;
+	}
+
+	public String getPhoneNumber() {
+		if (phoneNumber == null) {
+			return "";
+		}
+		return phoneNumber;
+	}
+
+	public String getImageUrl() {
+		if (imageUrl == null) {
+			return "";
+		}
+		return imageUrl;
 	}
 }

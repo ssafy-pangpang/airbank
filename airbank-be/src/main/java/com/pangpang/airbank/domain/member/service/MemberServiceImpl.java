@@ -6,11 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.pangpang.airbank.domain.auth.dto.GetLoginResponseDto;
 import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.dto.GetLoginMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
+import com.pangpang.airbank.domain.member.dto.PatchMemberRequestDto;
+import com.pangpang.airbank.domain.member.dto.PatchMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.global.error.exception.MemberException;
@@ -32,9 +33,7 @@ public class MemberServiceImpl implements MemberService {
 	@Transactional(readOnly = true)
 	@Override
 	public GetMemberResponseDto getMember(Long memberId) {
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
-
+		Member member = getMemberByIdOrElseThrowException(memberId);
 		return GetMemberResponseDto.from(member);
 	}
 
@@ -50,11 +49,9 @@ public class MemberServiceImpl implements MemberService {
 		Optional<Member> optionalMember = memberRepository.findByOauthIdentifier(postLoginRequestDto.getId());
 
 		if (optionalMember.isPresent()) {
-			return GetLoginMemberResponseDto.from(optionalMember.get().getId(),
-				new GetLoginResponseDto(optionalMember.get().getName(), optionalMember.get().getPhoneNumber()));
-		} else {
-			return saveMember(postLoginRequestDto);
+			return GetLoginMemberResponseDto.from(optionalMember.get());
 		}
+		return saveMember(postLoginRequestDto);
 	}
 
 	/**
@@ -67,8 +64,7 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public GetLoginMemberResponseDto saveMember(PostLoginRequestDto postLoginRequestDto) {
 		Member member = memberRepository.save(Member.of(postLoginRequestDto));
-		return GetLoginMemberResponseDto.from(member.getId(),
-			new GetLoginResponseDto(member.getName(), member.getPhoneNumber()));
+		return GetLoginMemberResponseDto.from(member);
 	}
 
 	/**
@@ -80,14 +76,12 @@ public class MemberServiceImpl implements MemberService {
 	@Transactional(readOnly = true)
 	@Override
 	public String getMemberOauthIdentifier(Long memberId) {
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
-
+		Member member = getMemberByIdOrElseThrowException(memberId);
 		return member.getOauthIdentifier();
 	}
 
 	/**
-	 *  사용자 id 조회
+	 *  사용자 이름 조회
 	 *
 	 * @param Long memberId
 	 * @return 사용자 id
@@ -95,10 +89,43 @@ public class MemberServiceImpl implements MemberService {
 	@Transactional(readOnly = true)
 	@Override
 	public GetLogoutResponseDto getMemberName(Long memberId) {
+		Member member = getMemberByIdOrElseThrowException(memberId);
+		return new GetLogoutResponseDto(member);
+	}
+
+	/**
+	 *  사용자 정보 수정
+	 * 
+	 * @param Long memberId
+	 *        PatchMemberRequestDto patchMemberRequestDto
+	 * @return 수정 후의 정보
+	 */
+	@Transactional
+	@Override
+	public PatchMemberResponseDto updateMember(Long memberId, PatchMemberRequestDto patchMemberRequestDto) {
+		Member member = getMemberByIdOrElseThrowException(memberId);
+		if (patchMemberRequestDto.getName() != null) {
+			member.setName(patchMemberRequestDto.getName());
+		}
+		if (patchMemberRequestDto.getPhoneNumber() != null) {
+			member.setPhoneNumber(patchMemberRequestDto.getPhoneNumber());
+		}
+		if (patchMemberRequestDto.getRole() != null) {
+			member.setRole(patchMemberRequestDto.getRole());
+		}
+		return PatchMemberResponseDto.from(member);
+	}
+
+	/**
+	 *  사용자 조회 (내부 로직)
+	 * 
+	 * @param Long memberId
+	 * @return 사용자 객체
+	 */
+	private Member getMemberByIdOrElseThrowException(Long memberId) {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
 
-		return new GetLogoutResponseDto(member.getName());
+		return member;
 	}
-
 }

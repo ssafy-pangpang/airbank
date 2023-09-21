@@ -12,10 +12,10 @@ public class GetLoginMemberResponseDto {
 	private Long id;
 	private GetLoginResponseDto getLoginResponseDto;
 
-	public static GetLoginMemberResponseDto from(Long id, GetLoginResponseDto getLoginResponseDto) {
+	public static GetLoginMemberResponseDto from(Member member) {
 		return GetLoginMemberResponseDto.builder()
-			.id(id)
-			.getLoginResponseDto(getLoginResponseDto)
+			.id(member.getId())
+			.getLoginResponseDto(GetLoginResponseDto.from(member))
 			.build();
 	}
 }

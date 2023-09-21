@@ -8,19 +8,15 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class GetMemberResponseDto {
+public class PatchMemberResponseDto {
 	private String name;
 	private String phoneNumber;
-	private Integer creditScore;
-	private String imageUrl;
 	private MemberRole role;
 
-	public static GetMemberResponseDto from(Member member) {
-		return GetMemberResponseDto.builder()
+	public static PatchMemberResponseDto from(Member member) {
+		return PatchMemberResponseDto.builder()
 			.name(member.getName())
 			.phoneNumber(member.getPhoneNumber())
-			.creditScore(member.getCreditScore())
-			.imageUrl(member.getImageUrl())
 			.role(member.getRole())
 			.build();
 	}
