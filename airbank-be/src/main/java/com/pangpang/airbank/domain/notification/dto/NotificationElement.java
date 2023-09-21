@@ -3,7 +3,6 @@ package com.pangpang.airbank.domain.notification.dto;
 import java.time.LocalDateTime;
 
 import com.pangpang.airbank.domain.notification.domain.Notification;
-import com.pangpang.airbank.domain.notification.domain.NotificationGroup;
 import com.pangpang.airbank.global.meta.domain.NotificationType;
 
 import lombok.Builder;

@@ -1,5 +1,6 @@
 package com.pangpang.airbank.domain.notification.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -10,10 +11,11 @@ import com.pangpang.airbank.domain.group.repository.MemberRelationshipRepository
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.domain.notification.domain.Notification;
+import com.pangpang.airbank.domain.notification.domain.NotificationGroup;
 import com.pangpang.airbank.domain.notification.dto.CreateNotificationDto;
-import com.pangpang.airbank.domain.notification.dto.GetNotificationRequestDto;
+import com.pangpang.airbank.domain.notification.dto.GetNotificationResponseDto;
 import com.pangpang.airbank.domain.notification.dto.NotificationElement;
-import com.pangpang.airbank.domain.notification.repository.NotificationRepository;
+import com.pangpang.airbank.domain.notification.repository.NotificationGroupRepository;
 import com.pangpang.airbank.global.error.exception.GroupException;
 import com.pangpang.airbank.global.error.exception.MemberException;
 import com.pangpang.airbank.global.error.info.GroupErrorInfo;
@@ -24,14 +26,15 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
+	private static final String ID_DELIMITER = "_";
 
-	private final NotificationRepository notificationRepository;
+	private final NotificationGroupRepository notificationGroupRepository;
 	private final MemberRelationshipRepository memberRelationshipRepository;
 	private final MemberRepository memberRepository;
 
-	@Transactional(readOnly = true)
+	@Transactional
 	@Override
-	public GetNotificationRequestDto inquireNotification(Long memberId, Long groupId) {
+	public GetNotificationResponseDto inquireNotification(Long memberId, Long groupId) {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
 
@@ -39,15 +42,39 @@ public class NotificationServiceImpl implements NotificationService {
 			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_MEMBER_RELATIONSHIP_BY_CHILD));
 
 		Long partnerId = memberRelationship.getPartnerMember(member).getId();
-		List<NotificationElement> notifications = notificationRepository.findByReceiverIdAndSenderId(memberId,
-			partnerId);
+		String notificationGroupId = partnerId + ID_DELIMITER + memberId;
+		NotificationGroup notificationGroup = notificationGroupRepository.findById(notificationGroupId)
+			.orElse(notificationGroupRepository.save(NotificationGroup.of(partnerId, memberId)));
 
-		return GetNotificationRequestDto.from(notifications);
+		List<NotificationElement> notificationElements = new ArrayList<>();
+		for (Notification notification : notificationGroup.getNotifications()) {
+			notificationElements.add(NotificationElement.from(notification));
+
+			if (notification.getActivated() == Boolean.FALSE) {
+				notification.activateActivated();
+			}
+		}
+
+		notificationGroupRepository.save(notificationGroup);
+
+		return GetNotificationResponseDto.from(notificationElements);
 	}
 
 	@Transactional
 	@Override
 	public void saveNotification(CreateNotificationDto createNotificationDto) {
-		notificationRepository.save(Notification.from(createNotificationDto));
+		Long senderId = createNotificationDto.getSenderId();
+		Long receiverId = createNotificationDto.getReceiverId();
+
+		String notificationGroupId = senderId + ID_DELIMITER + receiverId;
+
+		NotificationGroup notificationGroup = notificationGroupRepository.findById(notificationGroupId)
+			.orElse(
+				notificationGroupRepository.save(NotificationGroup.of(senderId, receiverId))
+			);
+
+		notificationGroup.saveNotification(Notification.from(createNotificationDto));
+
+		notificationGroupRepository.save(notificationGroup);
 	}
 }

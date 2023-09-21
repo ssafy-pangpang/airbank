@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pangpang.airbank.domain.notification.dto.CreateNotificationDto;
-import com.pangpang.airbank.domain.notification.dto.GetNotificationRequestDto;
+import com.pangpang.airbank.domain.notification.dto.GetNotificationResponseDto;
 import com.pangpang.airbank.domain.notification.service.NotificationService;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
@@ -25,13 +25,13 @@ public class NotificationController {
 	private final NotificationService notificationService;
 
 	@GetMapping()
-	public ResponseEntity<EnvelopeResponse<GetNotificationRequestDto>> inquireNotification(@RequestParam Long groupId
+	public ResponseEntity<EnvelopeResponse<GetNotificationResponseDto>> inquireNotification(@RequestParam Long groupId
 		// , @Authentication AuthenticatedMemberArgument authenticatedMemberArgument
 	) {
 		AuthenticatedMemberArgument authenticatedMemberArgument = new AuthenticatedMemberArgument(1L);
 
 		return ResponseEntity.ok()
-			.body(EnvelopeResponse.<GetNotificationRequestDto>builder()
+			.body(EnvelopeResponse.<GetNotificationResponseDto>builder()
 				.code(HttpStatus.OK.value())
 				.data(notificationService.inquireNotification(authenticatedMemberArgument.getMemberId(), groupId))
 				.build());
