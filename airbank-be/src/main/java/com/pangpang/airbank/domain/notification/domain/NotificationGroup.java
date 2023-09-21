@@ -3,9 +3,7 @@ package com.pangpang.airbank.domain.notification.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.springframework.data.annotation.Id;
-
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -20,6 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationGroup {
+	private static final String ID_DELIMITER = "_";
 
 	@Id
 	private String id;
@@ -30,7 +29,7 @@ public class NotificationGroup {
 
 	public static NotificationGroup of(Long senderId, Long receiverId) {
 		return NotificationGroup.builder()
-			.id(String.valueOf(senderId) + "_" + String.valueOf(receiverId))
+			.id(senderId + ID_DELIMITER + receiverId)
 			.build();
 	}
 
