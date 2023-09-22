@@ -6,6 +6,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pangpang.airbank.domain.account.dto.PostEnrollAccountRequestDto;
+import com.pangpang.airbank.global.common.api.nh.dto.GetCheckFinAccountRequestDto;
+import com.pangpang.airbank.global.common.api.nh.dto.GetCheckFinAccountResponseDto;
 import com.pangpang.airbank.global.common.api.nh.dto.GetFinAccountRequestDto;
 import com.pangpang.airbank.global.common.api.nh.dto.GetFinAccountResponseDto;
 import com.pangpang.airbank.global.common.api.nh.service.NhApiManagementService;
@@ -46,5 +48,27 @@ public class NHApi {
 			.bodyToMono(String.class)
 			.block();
 		return objectMapper.readValue(result, GetFinAccountResponseDto.class);
+	}
+
+	/**
+	 *  핀-어카운트 발급 확인
+	 *
+	 * @param rgno String
+	 * @return GetCheckFinAccountResponseDto
+	 * @see NHApiConstantProvider
+	 * @see GetCheckFinAccountRequestDto
+	 */
+	public GetCheckFinAccountResponseDto checkOpenFinAccountDirect(String rgno) throws JsonProcessingException {
+		String result = WebClient.create()
+			.post()
+			.uri(nhApiConstantProvider.getUrl() + "/CheckOpenFinAccountDirect.nh")
+			.header("Content-type", "application/json;charset=utf-8")
+			.bodyValue(
+				objectMapper.writeValueAsString(GetCheckFinAccountRequestDto.of(nhApiConstantProvider,
+					nhApiManagementService.updateIsTuno(), rgno)))
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
+		return objectMapper.readValue(result, GetCheckFinAccountResponseDto.class);
 	}
 }
