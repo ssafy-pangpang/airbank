@@ -4,11 +4,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pangpang.airbank.domain.account.domain.Account;
-import com.pangpang.airbank.domain.account.dto.CommonAccountIdResponseDto;
 import com.pangpang.airbank.domain.account.dto.PostEnrollAccountRequestDto;
 import com.pangpang.airbank.domain.account.repository.AccountRepository;
+import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.global.common.api.nh.NHApi;
+import com.pangpang.airbank.global.common.api.nh.dto.GetCheckFinAccountResponseDto;
+import com.pangpang.airbank.global.common.api.nh.dto.GetFinAccountResponseDto;
+import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.info.AccountErrorInfo;
 import com.pangpang.airbank.global.meta.domain.AccountType;
@@ -24,21 +27,52 @@ public class AccountServiceImpl implements AccountService {
 	private final AccountRepository accountRepository;
 	private final NHApi nhApi;
 
+	/**
+	 *  사용자가 계좌 등록하는 과정 처리
+	 *
+	 * @param postEnrollAccountRequestDto PostEnrollAccountRequestDto
+	 * @return CommonIdResponseDto
+	 * @see MemberRepository
+	 * @see NHApi
+	 */
 	@Override
 	@Transactional
-	public CommonAccountIdResponseDto saveAccount(PostEnrollAccountRequestDto postEnrollAccountRequestDto,
-		Long memberId) {
-		// Member member = memberRepository.findById(memberId)
-		// 	.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
+	public CommonIdResponseDto saveAccount(PostEnrollAccountRequestDto postEnrollAccountRequestDto, Long memberId) {
+		Member member = memberRepository.getById(memberId);
 
+		// 핀-어카운트 직접 발급
+		GetFinAccountResponseDto getFinAccountResponseDto;
 		try {
-			System.out.println(nhApi.getFinAccountDirect(postEnrollAccountRequestDto));
+			getFinAccountResponseDto = nhApi.getFinAccountDirect(postEnrollAccountRequestDto);
 		} catch (Exception e) {
-			// System.out.println(e.getMessage());
+			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
 		}
 
-		return null;
+		if (getFinAccountResponseDto.getRgno() == null) {
+			if (getFinAccountResponseDto.getHeader().getRsms().contains("이미 등록된")) {
+				throw new AccountException(AccountErrorInfo.ACCOUNT_ENROLL_ERROR);
+			}
+			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
+		}
+		accountRepository.save(Account.of(postEnrollAccountRequestDto, member, AccountType.MAIN_ACCOUNT));
 
+		// 핀-어카운트 발급 확인
+		GetCheckFinAccountResponseDto getCheckFinAccountResponseDto;
+		try {
+			getCheckFinAccountResponseDto = nhApi.checkOpenFinAccountDirect(
+				getFinAccountResponseDto.getRgno());
+		} catch (Exception e) {
+			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
+		}
+
+		if (getCheckFinAccountResponseDto.getFinAcno() == null) {
+			throw new AccountException(AccountErrorInfo.ACCOUNT_ENROLL_ERROR);
+		}
+		Account account = accountRepository.findByAccountNumber(postEnrollAccountRequestDto.getAccountNumber())
+			.orElseThrow(() -> new AccountException(AccountErrorInfo.ACCOUNT_SERVER_ERROR));
+		account.addFinAccount(getCheckFinAccountResponseDto.getFinAcno());
+
+		return CommonIdResponseDto.of(account.getId());
 	}
 
 	@Transactional(readOnly = true)

@@ -5,6 +5,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import com.pangpang.airbank.domain.BaseTimeEntity;
+import com.pangpang.airbank.domain.account.dto.PostEnrollAccountRequestDto;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.global.meta.converter.AccountTypeConverter;
 import com.pangpang.airbank.global.meta.converter.BankCodeConverter;
@@ -30,7 +31,7 @@ import lombok.NoArgsConstructor;
 
 @Entity(name = "account")
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @SQLDelete(sql = "UPDATE account SET deleted = true WHERE id = ?")
@@ -67,4 +68,22 @@ public class Account extends BaseTimeEntity {
 	@Column(length = 20)
 	@Convert(converter = AccountTypeConverter.class)
 	private AccountType type;
+
+	public static Account of(PostEnrollAccountRequestDto postEnrollAccountRequestDto, Member member, AccountType type) {
+		return Account.builder()
+			.accountNumber(postEnrollAccountRequestDto.getAccountNumber())
+			.bankCode(BankCode.ofCode(postEnrollAccountRequestDto.getBankCode()))
+			.member(member)
+			.type(type)
+			.build();
+	}
+
+	/**
+	 *  핀-어카운트 정보 갱신
+	 *
+	 * @param finAccountNumber String
+	 */
+	public void addFinAccount(String finAccountNumber) {
+		this.finAccountNumber = finAccountNumber;
+	}
 }
