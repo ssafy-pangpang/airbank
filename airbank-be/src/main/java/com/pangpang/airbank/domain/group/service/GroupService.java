@@ -19,4 +19,6 @@ public interface GroupService {
 
 	PatchFundManagementResponseDto updateFundManagement(Long memberId,
 		CommonFundManagementRequestDto commonFundManagementRequestDto, Long groupId);
+
+	Boolean isMemberInGroup(Long memberId, Long groupId);
 }

@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.ColumnDefault;
 
 import com.pangpang.airbank.domain.BaseTimeEntity;
-import com.pangpang.airbank.domain.group.domain.MemberRelationship;
+import com.pangpang.airbank.domain.group.domain.Group;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,7 +56,7 @@ public class Interest extends BaseTimeEntity {
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_relationship_id",
-		foreignKey = @ForeignKey(name = "fk_interest_to_member_relationship_member_relationship_id"))
-	private MemberRelationship memberRelationship;
+	@JoinColumn(name = "group_id",
+		foreignKey = @ForeignKey(name = "fk_interest_to_group_group_id"))
+	private Group group;
 }

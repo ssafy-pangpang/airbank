@@ -26,7 +26,7 @@ public class MemberServiceImpl implements MemberService {
 
 	/**
 	 *  사용자 조회
-	 * 
+	 *
 	 * @param Long memberId
 	 * @return 사용자 정보
 	 */
@@ -39,7 +39,7 @@ public class MemberServiceImpl implements MemberService {
 
 	/**
 	 *  카카오 식별자로 사용자 조회
-	 * 
+	 *
 	 * @param PostLoginRequestDto postLoginRequestDto
 	 * @return 사용자 정보
 	 */
@@ -68,8 +68,9 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	/**
+	 <<<<<<< HEAD
 	 *  사용자 oauth식별자 조회
-	 * 
+	 *
 	 * @param Long memberId
 	 * @return 사용자의 oauthIdentifier
 	 */
@@ -95,7 +96,7 @@ public class MemberServiceImpl implements MemberService {
 
 	/**
 	 *  사용자 정보 수정
-	 * 
+	 *
 	 * @param Long memberId
 	 *        PatchMemberRequestDto patchMemberRequestDto
 	 * @return 수정 후의 정보
@@ -118,7 +119,7 @@ public class MemberServiceImpl implements MemberService {
 
 	/**
 	 *  사용자 조회 (내부 로직)
-	 * 
+	 *
 	 * @param Long memberId
 	 * @return 사용자 객체
 	 */
@@ -128,4 +129,18 @@ public class MemberServiceImpl implements MemberService {
 
 		return member;
 	}
+
+	/**
+	 *  memberId 검증
+	 *
+	 * @param memberId Long
+	 * @return Boolean
+	 * @see MemberRepository
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public Boolean isValidMember(Long memberId) {
+		return memberRepository.existsById(memberId);
+	}
+
 }

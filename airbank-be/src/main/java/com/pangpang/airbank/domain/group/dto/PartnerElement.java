@@ -1,6 +1,6 @@
 package com.pangpang.airbank.domain.group.dto;
 
-import com.pangpang.airbank.domain.group.domain.MemberRelationship;
+import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.member.domain.Member;
 
 import lombok.AllArgsConstructor;
@@ -18,10 +18,10 @@ public class PartnerElement {
 	private String name;
 	private String imageUrl;
 
-	public static PartnerElement of(MemberRelationship memberRelationship, Member partnerMember) {
+	public static PartnerElement of(Group group, Member partnerMember) {
 		return PartnerElement.builder()
 			.id(partnerMember.getId())
-			.groupId(memberRelationship.getId())
+			.groupId(group.getId())
 			.name(partnerMember.getName())
 			.imageUrl(partnerMember.getImageUrl())
 			.build();

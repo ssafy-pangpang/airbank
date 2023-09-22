@@ -16,7 +16,6 @@ import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -28,7 +27,7 @@ public class MemberController {
 
 	/**
 	 *  사용자 정보 조회
-	 * 
+	 *
 	 * @param AuthenticatedMemberArgument authenticatedMemberArgument
 	 * @return 사용자 정보
 	 * @see AuthenticationArgumentResolver
@@ -53,8 +52,8 @@ public class MemberController {
 	 */
 	@PatchMapping()
 	public ResponseEntity<EnvelopeResponse<PatchMemberResponseDto>> updateMember(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument, @RequestBody PatchMemberRequestDto patchMemberRequestDto) {
-
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestBody PatchMemberRequestDto patchMemberRequestDto) {
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<PatchMemberResponseDto>builder()
 				.code(HttpStatus.OK.value())
