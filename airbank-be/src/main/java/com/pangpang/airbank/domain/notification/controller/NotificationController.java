@@ -25,7 +25,7 @@ public class NotificationController {
 	private final NotificationService notificationService;
 
 	@GetMapping()
-	public ResponseEntity<EnvelopeResponse<GetNotificationResponseDto>> inquireNotification(@RequestParam Long groupId
+	public ResponseEntity<EnvelopeResponse<GetNotificationResponseDto>> inquireNotification(@RequestParam("group_id") Long groupId
 		// , @Authentication AuthenticatedMemberArgument authenticatedMemberArgument
 	) {
 		AuthenticatedMemberArgument authenticatedMemberArgument = new AuthenticatedMemberArgument(1L);
