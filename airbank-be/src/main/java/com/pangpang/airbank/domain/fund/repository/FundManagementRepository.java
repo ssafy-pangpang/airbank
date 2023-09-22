@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.pangpang.airbank.domain.fund.domain.FundManagement;
 
 public interface FundManagementRepository extends JpaRepository<FundManagement, Long> {
-	Optional<FundManagement> findByMemberRelationshipId(Long memberRelationshipId);
+	Optional<FundManagement> findByGroupId(Long groupId);
 
-	Boolean existsByMemberRelationshipId(Long groupId);
+	Boolean existsByGroupId(Long groupId);
 }

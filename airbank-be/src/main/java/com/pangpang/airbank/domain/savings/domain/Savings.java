@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.ColumnDefault;
 
 import com.pangpang.airbank.domain.BaseTimeEntity;
-import com.pangpang.airbank.domain.group.domain.MemberRelationship;
+import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.global.meta.converter.SavingsStatusConverter;
 import com.pangpang.airbank.global.meta.domain.SavingsStatus;
 
@@ -64,9 +64,9 @@ public class Savings extends BaseTimeEntity {
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_relationship_id",
-		foreignKey = @ForeignKey(name = "fk_savings_to_member_relationship_member_relationship_id"))
-	private MemberRelationship memberRelationship;
+	@JoinColumn(name = "group_id",
+		foreignKey = @ForeignKey(name = "fk_savings_to_group_group_id"))
+	private Group group;
 
 	@NotNull
 	@Builder.Default

@@ -3,8 +3,7 @@ package com.pangpang.airbank.domain.group.dto;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.pangpang.airbank.domain.group.domain.MemberRelationship;
-import com.pangpang.airbank.domain.member.domain.Member;
+import com.pangpang.airbank.domain.group.domain.Group;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -14,11 +13,11 @@ import lombok.Getter;
 public class GetPartnersResponseDto {
 	private List<PartnerElement> members;
 
-	public static GetPartnersResponseDto of(List<MemberRelationship> memberRelationships, Member member) {
+	public static GetPartnersResponseDto of(List<Group> groups, Long memberId) {
 		return GetPartnersResponseDto.builder()
-			.members(memberRelationships.stream()
-				.map(memberRelationship -> PartnerElement.of(memberRelationship,
-					memberRelationship.getPartnerMember(member)))
+			.members(groups.stream()
+				.map(group -> PartnerElement.of(group,
+					group.getPartnerMember(memberId)))
 				.collect(Collectors.toList()))
 			.build();
 	}

@@ -5,7 +5,6 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import com.pangpang.airbank.domain.member.domain.Member;
-import com.pangpang.airbank.global.meta.domain.MemberRole;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,14 +22,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "member_relationship")
+@Entity(name = "group")
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE member_relationship SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE group SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
-public class MemberRelationship {
+public class Group {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -49,26 +48,26 @@ public class MemberRelationship {
 
 	@NotNull
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "child_id", foreignKey = @ForeignKey(name = "fk_member_relationship_to_member_child_id"))
+	@JoinColumn(name = "child_id", foreignKey = @ForeignKey(name = "fk_group_to_member_child_id"))
 	private Member child;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_member_relationship_to_member_parent_id"))
+	@JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_group_to_member_parent_id"))
 	private Member parent;
 
-	public static MemberRelationship of(Member parentMember, Member childMember) {
-		return MemberRelationship.builder()
+	public static Group of(Member parentMember, Member childMember) {
+		return Group.builder()
 			.parent(parentMember)
 			.child(childMember)
 			.build();
 	}
 
-	public Member getPartnerMember(Member member) {
-		if (member.getRole().getName().equals(MemberRole.PARENT.getName())) {
-			return this.getChild();
+	public Member getPartnerMember(Long memberId) {
+		if (this.parent.getId().equals(memberId)) {
+			return this.child;
 		}
-		return this.getParent();
+		return this.parent;
 	}
 
 	public void setActivated(Boolean activated) {
