@@ -1,62 +1,51 @@
 package com.pangpang.airbank.domain.notification.domain;
 
-import org.hibernate.annotations.ColumnDefault;
+import java.time.LocalDateTime;
 
-import com.pangpang.airbank.domain.BaseTimeEntity;
-import com.pangpang.airbank.domain.member.domain.Member;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import com.pangpang.airbank.domain.notification.dto.CreateNotificationDto;
 import com.pangpang.airbank.global.meta.converter.NotificationTypeConverter;
 import com.pangpang.airbank.global.meta.domain.NotificationType;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Entity(name = "notification")
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Notification extends BaseTimeEntity {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
-	@Size(max = 255)
-	@NotNull
-	@Column
+public class Notification {
 	private String content;
 
-	@NotNull
 	@Builder.Default
-	@ColumnDefault("false")
-	@Column
 	private Boolean activated = Boolean.FALSE;
 
-	@NotNull
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "sender_id", foreignKey = @ForeignKey(name = "fk_notification_to_member_sender_id"))
-	private Member sender;
+	private Long senderId;
 
-	@NotNull
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "receiver_id", foreignKey = @ForeignKey(name = "fk_notification_to_member_receiver_id"))
-	private Member receiver;
+	private Long receiverId;
 
-	@NotNull
-	@Column(length = 20)
 	@Convert(converter = NotificationTypeConverter.class)
 	private NotificationType notificationType;
+
+	@CreatedDate
+	private LocalDateTime createdAt;
+
+	@LastModifiedDate
+	private LocalDateTime updatedAt;
+
+	public static Notification from(CreateNotificationDto createNotificationDto) {
+		return Notification.builder()
+			.content(createNotificationDto.getContent())
+			.senderId(createNotificationDto.getSenderId())
+			.receiverId(createNotificationDto.getReceiverId())
+			.notificationType(createNotificationDto.getNotificationType())
+			.createdAt(LocalDateTime.now())
+			.updatedAt(LocalDateTime.now())
+			.build();
+	}
+
+	public void activateActivated() {
+		this.activated = true;
+	}
 }

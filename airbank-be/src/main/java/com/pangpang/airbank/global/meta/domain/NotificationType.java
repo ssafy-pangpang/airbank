@@ -2,6 +2,8 @@ package com.pangpang.airbank.global.meta.domain;
 
 import java.util.Arrays;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.pangpang.airbank.global.error.exception.MetaException;
 import com.pangpang.airbank.global.error.info.MetaErrorInfo;
 
@@ -26,10 +28,16 @@ public enum NotificationType {
 		this.name = name;
 	}
 
+	@JsonCreator
 	public static NotificationType ofName(String name) {
 		return Arrays.stream(NotificationType.values())
 			.filter(value -> value.getName().equals(name))
 			.findAny()
 			.orElseThrow(() -> new MetaException(MetaErrorInfo.INVALID_METADATA));
+	}
+
+	@JsonValue
+	public String getName() {
+		return name;
 	}
 }
