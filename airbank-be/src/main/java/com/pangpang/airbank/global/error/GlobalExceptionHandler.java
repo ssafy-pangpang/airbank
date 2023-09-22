@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
+import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.AuthException;
 import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
@@ -58,4 +59,12 @@ public class GlobalExceptionHandler {
 				.build());
 	}
 
+	@ExceptionHandler(AccountException.class)
+	public ResponseEntity<EnvelopeResponse<AccountException>> accountExceptionHandler(AccountException exception) {
+		return ResponseEntity.status(exception.getInfo().getStatus())
+			.body(EnvelopeResponse.<AccountException>builder()
+				.code(exception.getInfo().getCode())
+				.message(exception.getInfo().getMessage())
+				.build());
+	}
 }
