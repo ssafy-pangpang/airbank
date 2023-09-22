@@ -3,11 +3,15 @@ package com.pangpang.airbank.domain.account.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pangpang.airbank.domain.account.domain.Account;
 import com.pangpang.airbank.domain.account.dto.CommonAccountIdResponseDto;
 import com.pangpang.airbank.domain.account.dto.PostEnrollAccountRequestDto;
 import com.pangpang.airbank.domain.account.repository.AccountRepository;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.global.common.api.nh.NHApi;
+import com.pangpang.airbank.global.error.exception.AccountException;
+import com.pangpang.airbank.global.error.info.AccountErrorInfo;
+import com.pangpang.airbank.global.meta.domain.AccountType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,4 +40,22 @@ public class AccountServiceImpl implements AccountService {
 		return null;
 
 	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public String getAccountNumber(Long memberId, AccountType type) {
+		return getAccount(memberId, type).getAccountNumber();
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public String getFinAccountNumber(Long memberId, AccountType type) {
+		return getAccount(memberId, type).getFinAccountNumber();
+	}
+
+	private Account getAccount(Long memberId, AccountType type) {
+		return accountRepository.findByMemberIdAndType(memberId, type)
+			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+	}
+
 }
