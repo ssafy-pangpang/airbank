@@ -46,7 +46,6 @@ public class Account extends BaseTimeEntity {
 	private String accountNumber;
 
 	@Size(max = 40)
-	@NotNull
 	@Column
 	private String finAccountNumber;
 
@@ -56,7 +55,6 @@ public class Account extends BaseTimeEntity {
 	@Column
 	private Boolean deleted = Boolean.FALSE;
 
-	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id", foreignKey = @ForeignKey(name = "fk_account_to_member_member_id"))
 	private Member member;
@@ -66,7 +64,6 @@ public class Account extends BaseTimeEntity {
 	@Convert(converter = BankCodeConverter.class)
 	private BankCode bankCode;
 
-	@NotNull
 	@Column(length = 20)
 	@Convert(converter = AccountTypeConverter.class)
 	private AccountType type;
