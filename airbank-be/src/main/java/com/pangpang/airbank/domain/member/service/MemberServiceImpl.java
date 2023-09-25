@@ -7,16 +7,22 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
+import com.pangpang.airbank.domain.group.domain.Group;
+import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.domain.Member;
+import com.pangpang.airbank.domain.member.dto.GetCreditResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetLoginMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberRequestDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
+import com.pangpang.airbank.global.error.exception.GroupException;
 import com.pangpang.airbank.global.error.exception.MemberException;
+import com.pangpang.airbank.global.error.info.GroupErrorInfo;
 import com.pangpang.airbank.global.error.info.MemberErrorInfo;
 import com.pangpang.airbank.global.meta.domain.CreditRating;
+import com.pangpang.airbank.global.meta.domain.MemberRole;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 	private final MemberRepository memberRepository;
+	private final GroupRepository groupRepository;
 	private final CreditHistoryService creditHistoryService;
 
 	/**
@@ -145,7 +152,7 @@ public class MemberServiceImpl implements MemberService {
 		return memberRepository.existsById(memberId);
 	}
 
-	/*
+	/**
 	 *  신용점수 수정
 	 *
 	 * @param memberId Long
@@ -174,5 +181,37 @@ public class MemberServiceImpl implements MemberService {
 			(int)Math.round((creditRating.getMaxScore() - creditRating.getMinScore()) * rate));
 		member.setCreditScore(member.getCreditScore() + points);
 		creditHistoryService.saveCreditHistory(member);
+	}
+
+	/**
+	 *  신용 등급 조회
+	 *
+	 * @param memberId Long
+	 * @return 신용 등급
+	 * @see CreditRating
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public GetCreditResponseDto getCreditRating(Long memberId, Long groupId) {
+		Member member = getMemberByIdOrElseThrowException(memberId);
+
+		if (member.getRole().getName().equals(MemberRole.PARENT.getName())) {
+			member = getChildInGroup(groupId);
+		}
+
+		return new GetCreditResponseDto(CreditRating.getCreditRating(member.getCreditScore()).getRating());
+	}
+
+	/**
+	 *  그룹에 속한 자녀 조회
+	 *
+	 * @param groupId Long
+	 * @return 자녀 정보
+	 */
+	private Member getChildInGroup(Long groupId) {
+		Group group = groupRepository.findById(groupId)
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_ID));
+
+		return group.getChild();
 	}
 }
