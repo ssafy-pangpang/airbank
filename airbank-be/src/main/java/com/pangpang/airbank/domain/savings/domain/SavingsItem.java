@@ -1,5 +1,7 @@
 package com.pangpang.airbank.domain.savings.domain;
 
+import com.pangpang.airbank.domain.savings.dto.PostSaveSavingsRequestDto;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -43,4 +45,13 @@ public class SavingsItem {
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "savings_id", foreignKey = @ForeignKey(name = "fk_savings_item_to_savings_savings_id"))
 	private Savings savings;
+
+	public static SavingsItem of(Savings savings, PostSaveSavingsRequestDto postSaveSavingsRequestDto) {
+		return SavingsItem.builder()
+			.name(postSaveSavingsRequestDto.getName())
+			.amount(postSaveSavingsRequestDto.getAmount())
+			.imageUrl(postSaveSavingsRequestDto.getImageUrl())
+			.savings(savings)
+			.build();
+	}
 }

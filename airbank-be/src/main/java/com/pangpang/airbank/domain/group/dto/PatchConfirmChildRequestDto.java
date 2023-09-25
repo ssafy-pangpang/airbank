@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PatchConfirmRequestDto {
+public class PatchConfirmChildRequestDto {
 	private Boolean isAccept;
 }

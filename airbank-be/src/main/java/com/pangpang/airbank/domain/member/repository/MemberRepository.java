@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.pangpang.airbank.domain.member.domain.Member;
+import com.pangpang.airbank.global.meta.domain.MemberRole;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
@@ -16,4 +17,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	Optional<Member> findByChildPhoneNumber(@Param("phoneNumber") String phoneNumber);
 
 	Optional<Member> findByOauthIdentifier(String oauthIdentifier);
+
+	Boolean existsByIdAndRoleEquals(Long id, MemberRole role);
 }

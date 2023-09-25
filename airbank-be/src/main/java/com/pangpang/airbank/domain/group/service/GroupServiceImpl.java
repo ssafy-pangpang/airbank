@@ -12,7 +12,7 @@ import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.dto.CommonFundManagementRequestDto;
 import com.pangpang.airbank.domain.group.dto.CommonIdResponseDto;
 import com.pangpang.airbank.domain.group.dto.GetPartnersResponseDto;
-import com.pangpang.airbank.domain.group.dto.PatchConfirmRequestDto;
+import com.pangpang.airbank.domain.group.dto.PatchConfirmChildRequestDto;
 import com.pangpang.airbank.domain.group.dto.PatchFundManagementResponseDto;
 import com.pangpang.airbank.domain.group.dto.PostEnrollChildRequestDto;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
@@ -37,6 +37,14 @@ public class GroupServiceImpl implements GroupService {
 	private final MemberRepository memberRepository;
 	private final FundManagementRepository fundManagementRepository;
 
+	/**
+	 *  로그인 사용자의 현재 그룹에 있는 멤버를 조회하는 메소드
+	 *
+	 * @param memberId Long
+	 * @return GetPartnersResponseDto
+	 * @see MemberRepository
+	 * @see GroupRepository
+	 */
 	@Transactional(readOnly = true)
 	@Override
 	public GetPartnersResponseDto getPartners(Long memberId) {
@@ -56,6 +64,15 @@ public class GroupServiceImpl implements GroupService {
 		return GetPartnersResponseDto.of(groups, memberId);
 	}
 
+	/**
+	 *  부모가 자녀를 등록하는 메소드 단, 부모만 등록할 수 있음.
+	 *
+	 * @param memberId Long
+	 * @param postEnrollChildRequestDto PostEnrollChildRequestDto
+	 * @return CommonIdResponseDto
+	 * @see MemberRepository
+	 * @see GroupRepository
+	 */
 	@Transactional
 	@Override
 	public CommonIdResponseDto enrollChild(Long memberId, PostEnrollChildRequestDto postEnrollChildRequestDto) {
@@ -63,13 +80,13 @@ public class GroupServiceImpl implements GroupService {
 			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
 
 		if (!member.getRole().getName().equals(MemberRole.PARENT.getName())) {
-			throw new GroupException(GroupErrorInfo.ENROLL_PERMISSION_DENIED);
+			throw new GroupException(GroupErrorInfo.ENROLL_CHILD_PERMISSION_DENIED);
 		}
 
 		Member childMember = memberRepository.findByChildPhoneNumber(postEnrollChildRequestDto.getPhoneNumber())
 			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_CHILD_MEMBER_BY_PHONE_NUMBER));
 
-		groupRepository.findByChildId(childMember.getId()).ifPresent((group) -> {
+		groupRepository.findByChildIdAndActivatedTrue(childMember.getId()).ifPresent((group) -> {
 			if (group.getActivated()) {
 				throw new GroupException(GroupErrorInfo.ALREADY_HAD_PARENT);
 			}
@@ -80,21 +97,29 @@ public class GroupServiceImpl implements GroupService {
 		return new CommonIdResponseDto(groupRepository.save(group).getId());
 	}
 
+	/**
+	 *  부모가 요청한 자녀 등록을 자녀가 수락 또는 거절하는 메소드, 자녀만 등록가능
+	 *
+	 * @param memberId Long
+	 * @param patchConfirmChildRequestDto PatchConfirmRequestDto
+	 * @param groupId Long
+	 * @return CommonIdResponseDto
+	 * @see MemberRepository
+	 * @see GroupRepository
+	 */
 	@Transactional
 	@Override
-	public CommonIdResponseDto confirmEnrollment(Long memberId, PatchConfirmRequestDto patchConfirmRequestDto,
+	public CommonIdResponseDto confirmEnrollmentChild(Long memberId,
+		PatchConfirmChildRequestDto patchConfirmChildRequestDto,
 		Long groupId) {
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
-
-		if (!member.getRole().getName().equals(MemberRole.CHILD.getName())) {
-			throw new GroupException(GroupErrorInfo.CONFIRM_PERMISSION_DENIED);
+		if (!memberRepository.existsByIdAndRoleEquals(memberId, MemberRole.CHILD)) {
+			throw new GroupException(GroupErrorInfo.CONFIRM_ENROLLMENT_PERMISSION_DENIED);
 		}
 
-		Group group = groupRepository.findByIdAndChildId(groupId, member.getId())
+		Group group = groupRepository.findByIdAndChildIdAndActivatedFalse(groupId, memberId)
 			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD_ID));
 
-		if (patchConfirmRequestDto.getIsAccept()) {
+		if (patchConfirmChildRequestDto.getIsAccept()) {
 			group.setActivated(true);
 			return new CommonIdResponseDto(group.getId());
 		}
@@ -103,6 +128,17 @@ public class GroupServiceImpl implements GroupService {
 		return new CommonIdResponseDto(group.getId());
 	}
 
+	/**
+	 *  등록 요청한 그룹의 자금관리를 저장하는 메소드, 그룹 요청 시 그룹이 활성화 되어 있지 않을때 저장함
+	 *
+	 * @param memberId Long
+	 * @param commonFundManagementRequestDto CommonFundManagementRequestDto
+	 * @param groupId Long
+	 * @return CommonIdResponseDto
+	 * @see MemberRepository
+	 * @see GroupRepository
+	 * @see FundManagementRepository
+	 */
 	@Transactional
 	@Override
 	public CommonIdResponseDto saveFundManagement(Long memberId,
@@ -128,7 +164,7 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	/**
-	 *  자금 관리 수정
+	 *  자금 관리를 수정하는 메소드
 	 *
 	 * @param memberId Long
 	 * @param commonFundManagementRequestDto CommonFundManagementRequestDto
@@ -164,7 +200,7 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	/**
-	 *  memberId와 groupId가 매치되어 유효한 그룹인지 확인
+	 *  memberId와 groupId가 매치되어 유효한 그룹인지 확인하는 메소드
 	 *
 	 * @param memberId Long
 	 * @param groupId Long
