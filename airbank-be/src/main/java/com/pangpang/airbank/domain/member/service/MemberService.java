@@ -22,4 +22,8 @@ public interface MemberService {
 	PatchMemberResponseDto updateMember(Long memberId, PatchMemberRequestDto patchMemberRequestDto);
 
 	Boolean isValidMember(Long memberId);
+	
+	void updateCreditScore(Long memberId, Integer points);
+
+	void updateCreditScoreByRate(Long memberId, Double rate);
 }

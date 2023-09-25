@@ -30,8 +30,6 @@ public class CreditHistory extends BaseTimeEntity {
 	private Long id;
 
 	@NotNull
-	@Builder.Default
-	@ColumnDefault("632")
 	@Column
 	private Integer creditScore = 632;
 
@@ -39,4 +37,9 @@ public class CreditHistory extends BaseTimeEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id", foreignKey = @ForeignKey(name = "fk_credit_history_to_member_member_id"))
 	private Member member;
+
+	public CreditHistory(Member member) {
+		this.creditScore = member.getCreditScore();
+		this.member = member;
+	}
 }

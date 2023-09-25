@@ -16,6 +16,7 @@ import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.global.error.exception.MemberException;
 import com.pangpang.airbank.global.error.info.MemberErrorInfo;
+import com.pangpang.airbank.global.meta.domain.CreditRating;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 	private final MemberRepository memberRepository;
+	private final CreditHistoryService creditHistoryService;
 
 	/**
 	 *  사용자 조회
@@ -63,12 +65,12 @@ public class MemberServiceImpl implements MemberService {
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
 	public GetLoginMemberResponseDto saveMember(PostLoginRequestDto postLoginRequestDto) {
-		Member member = memberRepository.save(Member.of(postLoginRequestDto));
+		Member member = memberRepository.save(Member.from(postLoginRequestDto));
+		creditHistoryService.saveCreditHistory(member);
 		return GetLoginMemberResponseDto.from(member);
 	}
 
 	/**
-	 <<<<<<< HEAD
 	 *  사용자 oauth식별자 조회
 	 *
 	 * @param Long memberId
@@ -143,4 +145,34 @@ public class MemberServiceImpl implements MemberService {
 		return memberRepository.existsById(memberId);
 	}
 
+	/*
+	 *  신용점수 수정
+	 *
+	 * @param memberId Long
+	 *        points Integer
+	 * @return void
+	 */
+	@Override
+	public void updateCreditScore(Long memberId, Integer points) {
+		Member member = getMemberByIdOrElseThrowException(memberId);
+		member.setCreditScore(member.getCreditScore() + points);
+		creditHistoryService.saveCreditHistory(member);
+	}
+
+	/**
+	 *  신용점수 비율로 수정
+	 *
+	 * @param memberId Long
+	 *        rate Double
+	 * @return void
+	 */
+	@Override
+	public void updateCreditScoreByRate(Long memberId, Double rate) {
+		Member member = getMemberByIdOrElseThrowException(memberId);
+		CreditRating creditRating = CreditRating.getCreditRating(member.getCreditScore());
+		Integer points = Integer.valueOf(
+			(int)Math.round((creditRating.getMaxScore() - creditRating.getMinScore()) * rate));
+		member.setCreditScore(member.getCreditScore() + points);
+		creditHistoryService.saveCreditHistory(member);
+	}
 }
