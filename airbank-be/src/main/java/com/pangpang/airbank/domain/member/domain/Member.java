@@ -72,7 +72,7 @@ public class Member extends BaseTimeEntity {
 	@Convert(converter = MemberRoleConverter.class)
 	private MemberRole role = MemberRole.UNKNOWN;
 
-	public static Member of(PostLoginRequestDto postLoginRequestDto) {
+	public static Member from(PostLoginRequestDto postLoginRequestDto) {
 		return Member.builder()
 			.oauthIdentifier(postLoginRequestDto.getId())
 			.imageUrl(getImageUrl(postLoginRequestDto.getKakaoAccount().getProfile().getProfileImageUrl(),
@@ -87,24 +87,4 @@ public class Member extends BaseTimeEntity {
 		return profileImageUrl;
 	}
 
-	public String getName() {
-		if (name == null) {
-			return "";
-		}
-		return name;
-	}
-
-	public String getPhoneNumber() {
-		if (phoneNumber == null) {
-			return "";
-		}
-		return phoneNumber;
-	}
-
-	public String getImageUrl() {
-		if (imageUrl == null) {
-			return "";
-		}
-		return imageUrl;
-	}
 }

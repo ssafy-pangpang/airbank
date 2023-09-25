@@ -54,6 +54,7 @@ public class MemberController {
 	public ResponseEntity<EnvelopeResponse<PatchMemberResponseDto>> updateMember(
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PatchMemberRequestDto patchMemberRequestDto) {
+		
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<PatchMemberResponseDto>builder()
 				.code(HttpStatus.OK.value())
