@@ -1,6 +1,6 @@
 package com.pangpang.airbank.domain.fund.domain;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.hibernate.annotations.ColumnDefault;
 
@@ -37,7 +37,7 @@ public class Tax {
 
 	@NotNull
 	@Column
-	private LocalDateTime expiredAt;
+	private LocalDate expiredAt;
 
 	@NotNull
 	@Builder.Default
