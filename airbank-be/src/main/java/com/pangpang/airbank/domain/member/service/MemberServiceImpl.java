@@ -162,7 +162,16 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public void updateCreditScore(Long memberId, Integer points) {
 		Member member = getMemberByIdOrElseThrowException(memberId);
-		member.setCreditScore(member.getCreditScore() + points);
+		Integer newCreditScore = member.getCreditScore() + points;
+
+		if (newCreditScore > CreditRating.ONE.getMaxScore()) {
+			newCreditScore = CreditRating.ONE.getMaxScore();
+		}
+		if (newCreditScore < CreditRating.TEN.getMinScore()) {
+			newCreditScore = CreditRating.TEN.getMinScore();
+		}
+
+		member.setCreditScore(newCreditScore);
 		creditHistoryService.saveCreditHistory(member);
 	}
 
@@ -179,7 +188,16 @@ public class MemberServiceImpl implements MemberService {
 		CreditRating creditRating = CreditRating.getCreditRating(member.getCreditScore());
 		Integer points = Integer.valueOf(
 			(int)Math.round((creditRating.getMaxScore() - creditRating.getMinScore()) * rate));
-		member.setCreditScore(member.getCreditScore() + points);
+		Integer newCreditScore = member.getCreditScore() + points;
+
+		if (newCreditScore > CreditRating.ONE.getMaxScore()) {
+			newCreditScore = CreditRating.ONE.getMaxScore();
+		}
+		if (newCreditScore < CreditRating.TEN.getMinScore()) {
+			newCreditScore = CreditRating.TEN.getMinScore();
+		}
+		
+		member.setCreditScore(newCreditScore);
 		creditHistoryService.saveCreditHistory(member);
 	}
 
