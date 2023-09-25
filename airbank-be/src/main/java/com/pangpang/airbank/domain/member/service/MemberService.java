@@ -1,6 +1,7 @@
 package com.pangpang.airbank.domain.member.service;
 
 import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
+import com.pangpang.airbank.domain.member.dto.GetCreditResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetLoginMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberRequestDto;
@@ -22,8 +23,10 @@ public interface MemberService {
 	PatchMemberResponseDto updateMember(Long memberId, PatchMemberRequestDto patchMemberRequestDto);
 
 	Boolean isValidMember(Long memberId);
-	
+
 	void updateCreditScore(Long memberId, Integer points);
 
 	void updateCreditScoreByRate(Long memberId, Double rate);
+
+	GetCreditResponseDto getCreditRating(Long memberId, Long groupId);
 }

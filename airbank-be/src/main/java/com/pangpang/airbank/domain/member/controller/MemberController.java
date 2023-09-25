@@ -6,12 +6,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pangpang.airbank.domain.member.dto.GetCreditResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberRequestDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberResponseDto;
 import com.pangpang.airbank.domain.member.service.MemberService;
+import com.pangpang.airbank.global.aop.CheckGroup;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
@@ -54,11 +57,31 @@ public class MemberController {
 	public ResponseEntity<EnvelopeResponse<PatchMemberResponseDto>> updateMember(
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PatchMemberRequestDto patchMemberRequestDto) {
-		
+
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<PatchMemberResponseDto>builder()
 				.code(HttpStatus.OK.value())
 				.data(memberService.updateMember(authenticatedMemberArgument.getMemberId(), patchMemberRequestDto))
+				.build());
+	}
+
+	/**
+	 *  신용 등급 조회
+	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 * @return 신용등급
+	 * @see CreditRating
+	 */
+	@CheckGroup
+	@GetMapping("/credit")
+	public ResponseEntity<EnvelopeResponse<GetCreditResponseDto>> getCredit(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestParam("group_id") Long groupId) {
+
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<GetCreditResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(memberService.getCreditRating(authenticatedMemberArgument.getMemberId(), groupId))
 				.build());
 	}
 }
