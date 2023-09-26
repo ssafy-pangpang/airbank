@@ -21,18 +21,18 @@ public class AuthServiceImpl implements AuthService {
 	private static final String KAKAO_URL = "https://kauth.kakao.com/oauth/authorize";
 	private static final String KAKAO_AUTH_URI = "https://kauth.kakao.com/oauth/token";
 	private static final String KAKAO_API_URI = "https://kapi.kakao.com/v2/user/me";
-	private static final String KAKAO_LOGOUT_URL = "https://kapi.kakao.com/v1/user/logout";
+	private static final String KAKAO_LOGOUT_URL = "https://kauth.kakao.com/oauth/logout";
 
 	/**
 	 *  카카오 로그인 창 출력
 	 *
-	 * @param HttpServletResponse response
+	 * @param response HttpServletResponse
 	 * @return 카카오 로그인 창으로 redirect
 	 */
 	@Override
-	public void sendRedirectUrl(HttpServletResponse response) {
+	public void sendLoginRedirectUrl(HttpServletResponse response) {
 		try {
-			response.sendRedirect(getKakaoUrl());
+			response.sendRedirect(getKakaoLoginUrl());
 		} catch (Exception e) {
 			throw new AuthException(AuthErrorInfo.AUTH_SERVER_ERROR);
 		}
@@ -40,20 +40,20 @@ public class AuthServiceImpl implements AuthService {
 
 	/**
 	 *  카카오 로그인 창 주소 생성
-	 * 
+	 *
 	 * @return 카카오 로그인 창 URL
 	 */
-	private String getKakaoUrl() {
+	private String getKakaoLoginUrl() {
 		return new StringBuilder().append(KAKAO_URL).append("?")
 			.append("client_id=").append(authConstantProvider.getClientId()).append("&")
-			.append("redirect_uri=").append(authConstantProvider.getRedirectUri()).append("&")
+			.append("redirect_uri=").append(authConstantProvider.getLoginRedirectUri()).append("&")
 			.append("response_type=").append("code").toString();
 	}
 
 	/**
 	 *  인가코드로 토큰 발급
 	 *
-	 * @param String code
+	 * @param code String
 	 * @return 카카오 AccessToken
 	 */
 	@Override
@@ -80,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
 	/**
 	 *  토큰 발급에 필요한 파라미터 세팅
 	 *
-	 * @param String code
+	 * @param code String
 	 * @return map 형식으로 세팅된 파라미터
 	 */
 	private MultiValueMap<String, String> setAccessTokenParameters(String code) {
@@ -89,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
 		params.add("grant_type", "authorization_code");
 		params.add("client_id", authConstantProvider.getClientId());
 		params.add("client_secret", authConstantProvider.getClientSecret());
-		params.add("redirect_uri", authConstantProvider.getRedirectUri());
+		params.add("redirect_uri", authConstantProvider.getLoginRedirectUri());
 		params.add("code", code);
 
 		return params;
@@ -98,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
 	/**
 	 *  토큰으로 사용자 정보 조회
 	 *
-	 * @param String accessToken
+	 * @param accessToken String
 	 * @return 카카오에서 조회된 사용자 정보
 	 */
 	@Override
@@ -117,41 +117,29 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	/**
-	 *  카카오 로그아웃
+	 *  카카오 로그아웃 창 출력
 	 *
-	 * @param String oauthIdentifier
-	 * @return 리턴하는 값 설명
+	 * @param response HttpServletResponse
+	 * @return 카카오 로그아웃 창으로 redirect
 	 */
 	@Override
-	public String getKakaoLogout(String oauthIdentifier) {
-		MultiValueMap<String, String> params = setLogoutParameters(oauthIdentifier);
+	public void sendLogoutRedirectUrl(HttpServletResponse response) {
 		try {
-			return WebClient.create()
-				.post()
-				.uri(KAKAO_LOGOUT_URL)
-				.header("Content-type", "application/x-www-form-urlencoded;charset=utf-8")
-				.header("Authorization", "KakaoAK " + authConstantProvider.getServiceAppAdminKey())
-				.bodyValue(params)
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
+			response.sendRedirect(getKakaoLogoutUrl());
 		} catch (Exception e) {
 			throw new AuthException(AuthErrorInfo.AUTH_SERVER_ERROR);
 		}
 	}
 
 	/**
-	 *  로그아웃에 필요한 파라미터 세팅
+	 *  카카오 로그아웃 창 주소 생성
 	 *
-	 * @param String oauthIdentifier
-	 * @return map 형식으로 세팅된 파라미터
+	 * @return 카카오 로그아웃 창 URL
 	 */
-	private MultiValueMap<String, String> setLogoutParameters(String oauthIdentifier) {
-		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-
-		params.add("target_id_type", "user_id");
-		params.add("target_id", oauthIdentifier);
-
-		return params;
+	private String getKakaoLogoutUrl() {
+		return new StringBuilder().append(KAKAO_LOGOUT_URL).append("?")
+			.append("client_id=").append(authConstantProvider.getClientId()).append("&")
+			.append("logout_redirect_uri=").append(authConstantProvider.getLogoutRedirectUri()).toString();
 	}
+
 }
