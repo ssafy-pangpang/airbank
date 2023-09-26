@@ -9,6 +9,7 @@ import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.AuthException;
 import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
+import com.pangpang.airbank.global.error.exception.LoanException;
 import com.pangpang.airbank.global.error.exception.MemberException;
 import com.pangpang.airbank.global.error.exception.MetaException;
 import com.pangpang.airbank.global.error.exception.SavingsException;
@@ -73,6 +74,15 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<EnvelopeResponse<SavingsException>> savingsExceptionHandler(SavingsException exception) {
 		return ResponseEntity.status(exception.getInfo().getStatus())
 			.body(EnvelopeResponse.<SavingsException>builder()
+				.code(exception.getInfo().getCode())
+				.message(exception.getInfo().getMessage())
+				.build());
+	}
+
+	@ExceptionHandler(LoanException.class)
+	public ResponseEntity<EnvelopeResponse<LoanException>> savingsExceptionHandler(LoanException exception) {
+		return ResponseEntity.status(exception.getInfo().getStatus())
+			.body(EnvelopeResponse.<LoanException>builder()
 				.code(exception.getInfo().getCode())
 				.message(exception.getInfo().getMessage())
 				.build());
