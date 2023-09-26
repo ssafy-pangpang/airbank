@@ -3,6 +3,8 @@ package com.pangpang.airbank.domain.account.domain;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.pangpang.airbank.domain.account.dto.SaveDepositHistoryRequestDto;
+import com.pangpang.airbank.domain.account.dto.SaveWithdrawalHistoryRequestDto;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.global.meta.converter.TransactionDistinctionConverter;
 import com.pangpang.airbank.global.meta.converter.TransactionTypeConverter;
@@ -67,4 +69,28 @@ public class AccountHistory {
 	@Column(length = 20)
 	@Convert(converter = TransactionDistinctionConverter.class)
 	private TransactionDistinction transactionDistinction;
+
+	public static AccountHistory from(SaveWithdrawalHistoryRequestDto saveWithdrawalHistoryRequestDto) {
+		return AccountHistory.builder()
+			.transactionIdentifier(UUID.randomUUID())
+			.amount(saveWithdrawalHistoryRequestDto.getAmount())
+			.apiCreatedAt(LocalDateTime.now())
+			.account(saveWithdrawalHistoryRequestDto.getAccount())
+			.transactionPartner(saveWithdrawalHistoryRequestDto.getTransactionPartner())
+			.transactionType(saveWithdrawalHistoryRequestDto.getTransactionType())
+			.transactionDistinction(saveWithdrawalHistoryRequestDto.getTransactionDistinction())
+			.build();
+	}
+
+	public static AccountHistory from(SaveDepositHistoryRequestDto saveDepositHistoryRequestDto) {
+		return AccountHistory.builder()
+			.transactionIdentifier(UUID.randomUUID())
+			.amount(saveDepositHistoryRequestDto.getAmount())
+			.apiCreatedAt(LocalDateTime.now())
+			.account(saveDepositHistoryRequestDto.getAccount())
+			.transactionPartner(saveDepositHistoryRequestDto.getTransactionPartner())
+			.transactionType(saveDepositHistoryRequestDto.getTransactionType())
+			.transactionDistinction(saveDepositHistoryRequestDto.getTransactionDistinction())
+			.build();
+	}
 }
