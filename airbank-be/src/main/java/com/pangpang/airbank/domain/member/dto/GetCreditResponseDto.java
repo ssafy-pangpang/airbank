@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
 public class GetCreditResponseDto {
 	private Integer creditRating;
 

@@ -1,5 +1,6 @@
 package com.pangpang.airbank.domain.member.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -9,13 +10,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
+import com.pangpang.airbank.domain.member.domain.CreditHistory;
 import com.pangpang.airbank.domain.member.domain.Member;
+import com.pangpang.airbank.domain.member.dto.GetCreditHistoryResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetCreditResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetLoginMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberRequestDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
+import com.pangpang.airbank.domain.member.repository.CreditHistoryRepository;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.global.error.exception.GroupException;
 import com.pangpang.airbank.global.error.exception.MemberException;
@@ -31,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberServiceImpl implements MemberService {
 	private final MemberRepository memberRepository;
 	private final GroupRepository groupRepository;
+	private final CreditHistoryRepository creditHistoryRepository;
 	private final CreditHistoryService creditHistoryService;
 
 	/**
@@ -196,7 +201,6 @@ public class MemberServiceImpl implements MemberService {
 		if (newCreditScore < CreditRating.TEN.getMinScore()) {
 			newCreditScore = CreditRating.TEN.getMinScore();
 		}
-		
 		member.setCreditScore(newCreditScore);
 		creditHistoryService.saveCreditHistory(member);
 	}
@@ -218,6 +222,28 @@ public class MemberServiceImpl implements MemberService {
 		}
 
 		return new GetCreditResponseDto(CreditRating.getCreditRating(member.getCreditScore()).getRating());
+	}
+
+	/**
+	 *  신용점수 변동 내역 조회
+	 *
+	 * @param memberId Long
+	 *        groupId Long
+	 * @return 신용점수 변동 내역 리스트
+	 * @see CreditHistoryElement
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public GetCreditHistoryResponseDto getCreditHistory(Long memberId, Long groupId) {
+		Member member = getMemberByIdOrElseThrowException(memberId);
+
+		if (member.getRole().getName().equals(MemberRole.PARENT.getName())) {
+			member = getChildInGroup(groupId);
+		}
+
+		List<CreditHistory> creditHistories = creditHistoryRepository.findAllByMemberId(member.getId());
+
+		return GetCreditHistoryResponseDto.from(creditHistories);
 	}
 
 	/**
