@@ -21,11 +21,18 @@ import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/members")
 @RequiredArgsConstructor
+@Tag(name = "members", description = "사용자 정보를 관리하는 API")
 public class MemberController {
 
 	private final MemberService memberService;
@@ -33,10 +40,16 @@ public class MemberController {
 	/**
 	 *  사용자 정보 조회
 	 *
-	 * @param AuthenticatedMemberArgument authenticatedMemberArgument
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 * @return 사용자 정보
 	 * @see AuthenticationArgumentResolver
 	 */
+	@Operation(summary = "사용자 조회", description = "로그인한 사용자의 정보를 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "사용자 조회 성공",
+			content = @Content(schema = @Schema(implementation = GetMemberResponseDto.class))),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
+	})
 	@GetMapping()
 	public ResponseEntity<EnvelopeResponse<GetMemberResponseDto>> getMember(
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
@@ -51,10 +64,16 @@ public class MemberController {
 	/**
 	 *  회원정보 수정
 	 *
-	 * @param AuthenticatedMemberArgument authenticatedMemberArgument
-	 *        PatchMemberRequestDto patchMemberRequestDto
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 *        patchMemberRequestDto PatchMemberRequestDto
 	 * @return 수정된 회원 정보
 	 */
+	@Operation(summary = "회원정보 수정", description = "로그인한 사용자의 정보를 수정합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "회원정보 수정 성공",
+			content = @Content(schema = @Schema(implementation = PatchMemberResponseDto.class))),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
+	})
 	@PatchMapping()
 	public ResponseEntity<EnvelopeResponse<PatchMemberResponseDto>> updateMember(
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
@@ -75,6 +94,13 @@ public class MemberController {
 	 * @return 신용등급
 	 * @see CreditRating
 	 */
+	@Operation(summary = "신용등급 조회", description = "현재 부모-자녀 관계에 포함된 자녀의 신용등급을 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "신용등급 조회 성공",
+			content = @Content(schema = @Schema(implementation = GetCreditResponseDto.class))),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content)
+	})
 	@CheckGroup
 	@GetMapping("/credit")
 	public ResponseEntity<EnvelopeResponse<GetCreditResponseDto>> getCredit(
@@ -96,6 +122,13 @@ public class MemberController {
 	 * @return 신용점수 변동 내역 리스트
 	 * @see CreditHistoryElement
 	 */
+	@Operation(summary = "신용점수 변동내역 조회", description = "현재 부모-자녀 관계에 포함된 자녀의 신용점수 변동내역을 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "신용점수 변동내역 조회 성공",
+			content = @Content(schema = @Schema(implementation = GetCreditHistoryResponseDto.class))),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content)
+	})
 	@CheckGroup
 	@GetMapping("/credit-history")
 	public ResponseEntity<EnvelopeResponse<GetCreditHistoryResponseDto>> getCreditHistory(
