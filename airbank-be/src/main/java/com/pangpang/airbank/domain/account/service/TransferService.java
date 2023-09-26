@@ -1,7 +1,8 @@
 package com.pangpang.airbank.domain.account.service;
 
 import com.pangpang.airbank.domain.account.dto.TransferRequestDto;
+import com.pangpang.airbank.domain.account.dto.TransferResponseDto;
 
 public interface TransferService {
-	void transfer(TransferRequestDto transferRequestDto);
+	TransferResponseDto transfer(TransferRequestDto transferRequestDto);
 }
