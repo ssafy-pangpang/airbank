@@ -45,7 +45,8 @@ public class AccountController {
 			.body(EnvelopeResponse.<CommonIdResponseDto>builder()
 				.code(HttpStatus.CREATED.value())
 				.data(
-					accountService.saveAccount(postEnrollAccountRequestDto, authenticatedMemberArgument.getMemberId())
+					accountService.saveMainAccount(postEnrollAccountRequestDto,
+						authenticatedMemberArgument.getMemberId())
 				)
 				.build());
 	}

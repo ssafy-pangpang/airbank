@@ -86,4 +86,8 @@ public class Account extends BaseTimeEntity {
 	public void addFinAccount(String finAccountNumber) {
 		this.finAccountNumber = finAccountNumber;
 	}
+
+	public void addMember(Member member) {
+		this.member = member;
+	}
 }

@@ -7,7 +7,7 @@ import jakarta.persistence.AttributeConverter;
 public class BankCodeConverter implements AttributeConverter<BankCode, String> {
 	@Override
 	public String convertToDatabaseColumn(BankCode attribute) {
-		return attribute.getName();
+		return attribute.getCode();
 	}
 
 	@Override

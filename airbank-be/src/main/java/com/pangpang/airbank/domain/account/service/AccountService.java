@@ -5,7 +5,9 @@ import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.meta.domain.AccountType;
 
 public interface AccountService {
-	CommonIdResponseDto saveAccount(PostEnrollAccountRequestDto postEnrollAccountRequestDto, Long memberId);
+	CommonIdResponseDto saveMainAccount(PostEnrollAccountRequestDto postEnrollAccountRequestDto, Long memberId);
+
+	void saveLoanAccount(Long memberId);
 
 	String getAccountNumber(Long memberId, AccountType type);
 

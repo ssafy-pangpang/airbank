@@ -17,6 +17,8 @@ import com.pangpang.airbank.global.common.api.nh.dto.PostDepositTransferResponse
 import com.pangpang.airbank.global.common.api.nh.dto.PostWithdrawalTransferRequestDto;
 import com.pangpang.airbank.global.common.api.nh.dto.PostWithdrawalTransferResponseDto;
 import com.pangpang.airbank.global.common.api.nh.service.NhApiManagementService;
+import com.pangpang.airbank.global.error.exception.AccountException;
+import com.pangpang.airbank.global.error.info.AccountErrorInfo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -53,7 +55,13 @@ public class NHApi {
 			.retrieve()
 			.bodyToMono(String.class)
 			.block();
-		return objectMapper.readValue(result, GetFinAccountResponseDto.class);
+
+		GetFinAccountResponseDto response = objectMapper.readValue(result, GetFinAccountResponseDto.class);
+
+		if (!response.getHeader().getRsms().contains(nhApiConstantProvider.getNormalProcessingMessage())) {
+			throw new AccountException(AccountErrorInfo.ACCOUNT_ENROLL_ERROR);
+		}
+		return response;
 	}
 
 	/**
@@ -75,7 +83,13 @@ public class NHApi {
 			.retrieve()
 			.bodyToMono(String.class)
 			.block();
-		return objectMapper.readValue(result, GetCheckFinAccountResponseDto.class);
+
+		GetCheckFinAccountResponseDto response = objectMapper.readValue(result,
+			GetCheckFinAccountResponseDto.class);
+		if (!response.getHeader().getRsms().contains(nhApiConstantProvider.getNormalProcessingMessage())) {
+			throw new AccountException(AccountErrorInfo.ACCOUNT_ENROLL_ERROR);
+		}
+		return response;
 	}
 
 	/**

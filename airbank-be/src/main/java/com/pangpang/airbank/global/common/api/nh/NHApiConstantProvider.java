@@ -13,4 +13,5 @@ public class NHApiConstantProvider {
 	private final String accessToken;
 	private final String birth;
 	private final String url;
+	private final String normalProcessingMessage;
 }

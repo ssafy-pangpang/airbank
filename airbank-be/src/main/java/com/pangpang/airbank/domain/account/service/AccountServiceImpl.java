@@ -37,9 +37,48 @@ public class AccountServiceImpl implements AccountService {
 	 */
 	@Override
 	@Transactional
-	public CommonIdResponseDto saveAccount(PostEnrollAccountRequestDto postEnrollAccountRequestDto, Long memberId) {
-		Member member = memberRepository.getById(memberId);
+	public CommonIdResponseDto saveMainAccount(PostEnrollAccountRequestDto postEnrollAccountRequestDto, Long memberId) {
+		Member member = memberRepository.getReferenceById(memberId);
 
+		// 계좌 저장
+		Account account = Account.of(postEnrollAccountRequestDto, member, AccountType.MAIN_ACCOUNT);
+		accountRepository.save(account);
+
+		// 핀-어카운트 저장
+		saveFinAccount(account, postEnrollAccountRequestDto);
+		return CommonIdResponseDto.of(account.getId());
+	}
+
+	/**
+	 *  사용자가에게 사용 가능한 땡겨쓰기 계좌를 발급해주는 메소드
+	 *
+	 * @param memberId Long
+	 * @return CommonIdResponseDto
+	 * @see AccountRepository
+	 * @see MemberRepository
+	 */
+	@Override
+	@Transactional
+	public void saveLoanAccount(Long memberId) {
+		Account account = accountRepository.findFirstByMemberIsNull()
+			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_AVAILABLE_ACCOUNT));
+
+		PostEnrollAccountRequestDto postEnrollAccountRequestDto = PostEnrollAccountRequestDto.fromGroup(
+			account.getAccountNumber());
+
+		saveFinAccount(account, postEnrollAccountRequestDto);
+		account.addMember(memberRepository.getReferenceById(memberId));
+	}
+
+	/**
+	 *  들어오는 계좌번호에 대해 핀-어카운트를 발급하고 저장하는 메소드
+	 *
+	 * @param account Account
+	 * @param postEnrollAccountRequestDto PostEnrollAccountRequestDto
+	 * @return void
+	 * @see NHApi
+	 */
+	private void saveFinAccount(Account account, PostEnrollAccountRequestDto postEnrollAccountRequestDto) {
 		// 핀-어카운트 직접 발급
 		GetFinAccountResponseDto getFinAccountResponseDto;
 		try {
@@ -47,14 +86,6 @@ public class AccountServiceImpl implements AccountService {
 		} catch (Exception e) {
 			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
 		}
-
-		if (getFinAccountResponseDto.getRgno() == null) {
-			if (getFinAccountResponseDto.getHeader().getRsms().contains("이미 등록된")) {
-				throw new AccountException(AccountErrorInfo.ACCOUNT_ENROLL_ERROR);
-			}
-			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
-		}
-		accountRepository.save(Account.of(postEnrollAccountRequestDto, member, AccountType.MAIN_ACCOUNT));
 
 		// 핀-어카운트 발급 확인
 		GetCheckFinAccountResponseDto getCheckFinAccountResponseDto;
@@ -64,15 +95,7 @@ public class AccountServiceImpl implements AccountService {
 		} catch (Exception e) {
 			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
 		}
-
-		if (getCheckFinAccountResponseDto.getFinAcno() == null) {
-			throw new AccountException(AccountErrorInfo.ACCOUNT_ENROLL_ERROR);
-		}
-		Account account = accountRepository.findByAccountNumber(postEnrollAccountRequestDto.getAccountNumber())
-			.orElseThrow(() -> new AccountException(AccountErrorInfo.ACCOUNT_SERVER_ERROR));
 		account.addFinAccount(getCheckFinAccountResponseDto.getFinAcno());
-
-		return CommonIdResponseDto.of(account.getId());
 	}
 
 	@Transactional(readOnly = true)
