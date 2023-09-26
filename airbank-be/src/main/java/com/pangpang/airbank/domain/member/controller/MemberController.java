@@ -4,11 +4,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pangpang.airbank.domain.member.dto.GetCreditHistoryResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetCreditResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberRequestDto;
@@ -69,6 +71,7 @@ public class MemberController {
 	 *  신용 등급 조회
 	 *
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 *        groupId Long
 	 * @return 신용등급
 	 * @see CreditRating
 	 */
@@ -82,6 +85,46 @@ public class MemberController {
 			.body(EnvelopeResponse.<GetCreditResponseDto>builder()
 				.code(HttpStatus.OK.value())
 				.data(memberService.getCreditRating(authenticatedMemberArgument.getMemberId(), groupId))
+				.build());
+	}
+
+	/**
+	 *  신용점수 변동 내역 조회
+	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 *        groupId Long
+	 * @return 신용점수 변동 내역 리스트
+	 * @see CreditHistoryElement
+	 */
+	@CheckGroup
+	@GetMapping("/credit-history")
+	public ResponseEntity<EnvelopeResponse<GetCreditHistoryResponseDto>> getCreditHistory(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestParam("group_id") Long groupId) {
+
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<GetCreditHistoryResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(memberService.getCreditHistory(authenticatedMemberArgument.getMemberId(), groupId))
+				.build());
+	}
+
+	/**
+	 *  신용점수 수정 test
+	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 *        points Integer
+	 * @return void
+	 */
+	@PostMapping("/credit")
+	public ResponseEntity<EnvelopeResponse<Void>> updateCreditScore(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestParam("rate") Double rate) {
+
+		memberService.updateCreditScoreByRate(authenticatedMemberArgument.getMemberId(), rate);
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<Void>builder()
+				.code(HttpStatus.OK.value())
 				.build());
 	}
 }
