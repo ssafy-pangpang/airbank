@@ -38,22 +38,22 @@ public class AuthController {
 	/**
 	 *  auth별 로그인 창 출력
 	 *
-	 * @param HttpServletResponse response
+	 * @param response HttpServletResponse
 	 * @return 카카오 로그인 창으로 redirect
 	 */
 	@GetMapping("/login")
 	public void login(HttpServletResponse response) {
-		authService.sendRedirectUrl(response);
+		authService.sendLoginRedirectUrl(response);
 	}
 
 	/**
 	 *  인가 코드로 콜백되어 토큰 발급 및 사용자 정보 조회 후 회원가입 및 로그인 처리
 	 *
-	 * @param HttpServletRequest request
-	 *        GetLoginRequestDto getLoginRequestDto
+	 * @param request HttpServletRequest
+	 *        getLoginRequestDto GetLoginRequestDto
 	 * @return 현재 로그인한 사용자의 이름과 휴대폰번호
 	 */
-	@GetMapping("/callback")
+	@GetMapping("login/callback")
 	public ResponseEntity<EnvelopeResponse<GetLoginResponseDto>> login(HttpServletRequest request,
 		@RequestParam("code") GetLoginRequestDto getLoginRequestDto) {
 		HttpSession session = request.getSession();
@@ -71,16 +71,25 @@ public class AuthController {
 	}
 
 	/**
-	 *  사용자 로그아웃 요청 처리
-	 * 
-	 * @param HttpServletRequest request
-	 *        AuthenticatedMemberArgument authenticatedMemberArgument
+	 *  auth별 로그아웃 창 출력
+	 *
+	 * @param response HttpServletResponse
+	 * @return 카카오 로그아웃 창으로 redirect
 	 */
 	@GetMapping("/logout")
+	public void logout(HttpServletResponse response) {
+		authService.sendLogoutRedirectUrl(response);
+	}
+
+	/**
+	 *  사용자 로그아웃 요청 처리
+	 *
+	 * @param request HttpServletRequest
+	 *        authenticatedMemberArgument AuthenticatedMemberArgument
+	 */
+	@GetMapping("/logout/callback")
 	public ResponseEntity<EnvelopeResponse<GetLogoutResponseDto>> logout(HttpServletRequest request,
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
-		String oauthIdentifier = memberService.getMemberOauthIdentifier(authenticatedMemberArgument.getMemberId());
-		authService.getKakaoLogout(oauthIdentifier);
 		request.getSession().invalidate();
 
 		return ResponseEntity.ok()

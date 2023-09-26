@@ -6,11 +6,11 @@ import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
-	void sendRedirectUrl(HttpServletResponse response);
+	void sendLoginRedirectUrl(HttpServletResponse response);
 
 	GetKakaoAccessTokenResponseDto getKakaoAccessToken(String code);
 
 	PostLoginRequestDto getKakaoProfile(String accessToken);
 
-	String getKakaoLogout(String oauthIdentifier);
+	void sendLogoutRedirectUrl(HttpServletResponse response);
 }

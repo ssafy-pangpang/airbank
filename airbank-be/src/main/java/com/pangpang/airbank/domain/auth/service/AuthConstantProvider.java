@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthConstantProvider {
 	private final String clientId;
 	private final String clientSecret;
-	private final String redirectUri;
+	private final String loginRedirectUri;
+	private final String logoutRedirectUri;
 	private final String serviceAppAdminKey;
 }
