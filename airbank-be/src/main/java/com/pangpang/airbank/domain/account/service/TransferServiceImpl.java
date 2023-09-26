@@ -7,16 +7,21 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pangpang.airbank.domain.account.domain.Account;
 import com.pangpang.airbank.domain.account.dto.DepositTransferRequestDto;
 import com.pangpang.airbank.domain.account.dto.SaveDepositHistoryRequestDto;
 import com.pangpang.airbank.domain.account.dto.SaveWithdrawalHistoryRequestDto;
 import com.pangpang.airbank.domain.account.dto.TransferRequestDto;
+import com.pangpang.airbank.domain.account.dto.TransferResponseDto;
 import com.pangpang.airbank.domain.account.dto.WithdrawalTransferRequestDto;
+import com.pangpang.airbank.domain.account.repository.AccountRepository;
 import com.pangpang.airbank.global.common.api.nh.NHApi;
 import com.pangpang.airbank.global.common.api.nh.dto.PostDepositTransferResponseDto;
 import com.pangpang.airbank.global.common.api.nh.dto.PostWithdrawalTransferResponseDto;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.info.AccountErrorInfo;
+import com.pangpang.airbank.global.meta.domain.AccountType;
+import com.pangpang.airbank.global.meta.domain.TransactionType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,9 +35,9 @@ public class TransferServiceImpl implements TransferService {
 
 	@Override
 	@Transactional
-	public void transfer(TransferRequestDto transferRequestDto) {
+	public TransferResponseDto transfer(TransferRequestDto transferRequestDto) {
 		withdraw(transferRequestDto);
-		deposit(transferRequestDto);
+		return deposit(transferRequestDto);
 	}
 
 	private void withdraw(TransferRequestDto transferRequestDto) {
@@ -54,7 +59,7 @@ public class TransferServiceImpl implements TransferService {
 
 	}
 
-	private void deposit(TransferRequestDto transferRequestDto) {
+	private TransferResponseDto deposit(TransferRequestDto transferRequestDto) {
 		UUID transactionIdentifier = accountHistoryService.saveDepositHistory(
 			SaveDepositHistoryRequestDto.from(transferRequestDto));
 
@@ -70,6 +75,8 @@ public class TransferServiceImpl implements TransferService {
 		if (!postDepositTransferResponseDto.getHeader().getRsms().equals(NORMAL_PROCESSING_MESSAGE)) {
 			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
 		}
+
+		return TransferResponseDto.from(transferRequestDto.getAmount());
 	}
 
 	private String uuidToBase64(UUID uuid) {
