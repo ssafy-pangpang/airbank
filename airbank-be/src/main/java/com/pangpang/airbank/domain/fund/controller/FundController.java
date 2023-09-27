@@ -50,7 +50,7 @@ public class FundController {
 	@Operation(summary = "현재 세금 현황 조회", description = "사용자의 세금 현황을 조회합니다.")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "세금 현황 조회 성공",
-			content = @Content(schema = @Schema(implementation = com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto.class))),
+			content = @Content(schema = @Schema(implementation = GetTaxResponseDto.class))),
 	})
 	@CheckGroup
 	@GetMapping("/tax")
@@ -78,7 +78,7 @@ public class FundController {
 	@Operation(summary = "현재 이자 현황 조회", description = "사용자의 이자 현황을 조회합니다.")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "이자 현황 조회 성공",
-			content = @Content(schema = @Schema(implementation = com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto.class))),
+			content = @Content(schema = @Schema(implementation = GetInterestResponseDto.class))),
 	})
 	@CheckGroup
 	@GetMapping("/interest")
@@ -101,7 +101,7 @@ public class FundController {
 	 * @param postTransferBonusRequestDto
 	 * @param authenticatedMemberArgument
 	 * @param groupId
-	 * @return ResponseEntity<EnvelopeResponse<PostTransferBonusResponseDto>>
+	 * @return ResponseEntity<EnvelopeResponse < PostTransferBonusResponseDto>>
 	 */
 	@CheckGroup
 	@PostMapping("/bonus")

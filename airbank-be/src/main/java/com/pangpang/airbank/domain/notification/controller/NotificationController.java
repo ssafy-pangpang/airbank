@@ -36,7 +36,7 @@ public class NotificationController {
 	@Operation(summary = "알림 조회", description = "사용자의 알림을 조회합니다.")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "알림 조회 성공",
-			content = @Content(schema = @Schema(implementation = com.pangpang.airbank.domain.notification.dto.GetNotificationResponseDto.class))),
+			content = @Content(schema = @Schema(implementation = GetNotificationResponseDto.class))),
 		@ApiResponse(responseCode = "1303", description = "등록중인 그룹이 없습니다.", content = @Content)
 	})
 	@CheckGroup
