@@ -16,6 +16,12 @@ import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/accounts")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "accounts", description = "계좌 관리하는 API")
 public class AccountController {
 
 	private final AccountService accountService;
@@ -38,6 +45,13 @@ public class AccountController {
 	 * @return ResponseEntity<EnvelopeResponse < CommonIdResponseDto>>
 	 * @see AccountService
 	 */
+	@Operation(summary = "계좌 등록", description = "사용자가 직접 계좌를 등록합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "계좌 등록 성공",
+			content = @Content(schema = @Schema(implementation = com.pangpang.airbank.domain.group.dto.CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
+		@ApiResponse(responseCode = "1003", description = "Account 등록에 실패했습니다.", content = @Content),
+	})
 	@PostMapping()
 	public ResponseEntity<EnvelopeResponse<CommonIdResponseDto>> enrollAccount(
 		@RequestBody PostEnrollAccountRequestDto postEnrollAccountRequestDto,
@@ -60,13 +74,19 @@ public class AccountController {
 	 * @return ResponseEntity<EnvelopeResponse < GetAccountAmountResponseDto>>
 	 * @see AccountService
 	 */
+	@Operation(summary = "메인 계좌 잔액 조회", description = "사용자의 메인 계좌의 잔액을 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "계좌 잔액 조회 성공",
+			content = @Content(schema = @Schema(implementation = com.pangpang.airbank.domain.account.dto.GetAccountAmountResponseDto.class))),
+		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
+	})
 	@GetMapping()
 	public ResponseEntity<EnvelopeResponse<GetAccountAmountResponseDto>> getAccountAmount(
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
 
-		return ResponseEntity.status(HttpStatus.CREATED)
+		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<GetAccountAmountResponseDto>builder()
-				.code(HttpStatus.CREATED.value())
+				.code(HttpStatus.OK.value())
 				.data(
 					accountService.getAccountAmount(authenticatedMemberArgument.getMemberId())
 				)
