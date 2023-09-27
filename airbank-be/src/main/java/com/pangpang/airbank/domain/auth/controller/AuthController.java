@@ -28,6 +28,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 	사용자 인증에 대한 Controller
+ */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -48,6 +51,7 @@ public class AuthController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "로그인/회원가입 성공",
 			content = @Content(schema = @Schema(implementation = PostLoginResponseDto.class))),
+		@ApiResponse(responseCode = "1100", description = "인증이 유효하지 않습니다.", content = @Content),
 		@ApiResponse(responseCode = "1101", description = "인증 식별자가 유효하지 않습니다.", content = @Content)
 	})
 	@PostMapping("/login")
@@ -78,6 +82,7 @@ public class AuthController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "로그아웃 성공",
 			content = @Content(schema = @Schema(implementation = GetLogoutResponseDto.class))),
+		@ApiResponse(responseCode = "1100", description = "인증이 유효하지 않습니다.", content = @Content),
 		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
 	})
 	@GetMapping("/logout")
