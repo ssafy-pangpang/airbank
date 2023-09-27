@@ -42,7 +42,7 @@ public class MemberController {
 	 *
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 * @return 사용자 정보
-	 * @see AuthenticationArgumentResolver
+	 * @see com.pangpang.airbank.global.resolver.AuthenticationArgumentResolver
 	 */
 	@Operation(summary = "사용자 조회", description = "로그인한 사용자의 정보를 조회합니다.")
 	@ApiResponses(value = {
@@ -72,7 +72,8 @@ public class MemberController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "회원정보 수정 성공",
 			content = @Content(schema = @Schema(implementation = PatchMemberResponseDto.class))),
-		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1502", description = "이미 가입된 휴대폰 번호입니다.", content = @Content)
 	})
 	@PatchMapping()
 	public ResponseEntity<EnvelopeResponse<PatchMemberResponseDto>> updateMember(
@@ -92,7 +93,7 @@ public class MemberController {
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 *        groupId Long
 	 * @return 신용등급
-	 * @see CreditRating
+	 * @see com.pangpang.airbank.global.meta.domain.CreditRating
 	 */
 	@Operation(summary = "신용등급 조회", description = "현재 부모-자녀 관계에 포함된 자녀의 신용등급을 조회합니다.")
 	@ApiResponses(value = {
@@ -120,7 +121,7 @@ public class MemberController {
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 *        groupId Long
 	 * @return 신용점수 변동 내역 리스트
-	 * @see CreditHistoryElement
+	 * @see com.pangpang.airbank.domain.member.dto.CreditHistoryElement
 	 */
 	@Operation(summary = "신용점수 변동내역 조회", description = "현재 부모-자녀 관계에 포함된 자녀의 신용점수 변동내역을 조회합니다.")
 	@ApiResponses(value = {
