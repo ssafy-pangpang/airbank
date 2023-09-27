@@ -3,12 +3,16 @@ package com.pangpang.airbank.domain.fund.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferBonusResponseDto;
 import com.pangpang.airbank.domain.fund.service.FundService;
 import com.pangpang.airbank.global.aop.CheckGroup;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
@@ -70,6 +74,31 @@ public class FundController {
 				.code(HttpStatus.OK.value())
 				.data(
 					fundService.getInterest(authenticatedMemberArgument.getMemberId(), groupId)
+				)
+				.build());
+	}
+
+	/**
+	 * 보너스 송금
+	 *
+	 * @param postTransferBonusRequestDto
+	 * @param authenticatedMemberArgument
+	 * @param groupId
+	 * @return ResponseEntity<EnvelopeResponse<PostTransferBonusResponseDto>>
+	 */
+	@CheckGroup
+	@PostMapping("/bonus")
+	public ResponseEntity<EnvelopeResponse<PostTransferBonusResponseDto>> transferBonus(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestBody PostTransferBonusRequestDto postTransferBonusRequestDto,
+		@RequestParam("group_id") Long groupId) {
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<PostTransferBonusResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(
+					fundService.transferBonus(postTransferBonusRequestDto, authenticatedMemberArgument.getMemberId(),
+						groupId)
 				)
 				.build());
 	}
