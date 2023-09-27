@@ -14,6 +14,8 @@ import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusResponseDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferTaxRequestDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferTaxResponseDto;
 import com.pangpang.airbank.domain.fund.service.FundService;
 import com.pangpang.airbank.global.aop.CheckGroup;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
@@ -64,6 +66,36 @@ public class FundController {
 				.code(HttpStatus.OK.value())
 				.data(
 					fundService.getTax(authenticatedMemberArgument.getMemberId(), groupId)
+				)
+				.build());
+	}
+
+	/**
+	 * 세금의 총 금액을 납부하는 기능
+	 *
+	 * @param authenticatedMemberArgument
+	 * @param postTransferTaxRequestDto
+	 * @return ResponseEntity<EnvelopeResponse < PostTransferTaxResponseDto>>
+	 */
+	@Operation(summary = "세금 송금", description = "사용자의 전체 세금을 냅니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "세금 현황 조회 성공",
+			content = @Content(schema = @Schema(implementation = PostTransferTaxResponseDto.class))),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1204", description = "송금된 금액이 지정 금액과 다릅니다.", content = @Content),
+		@ApiResponse(responseCode = "1205", description = "송금될 금액이 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
+	@PostMapping("/tax")
+	public ResponseEntity<EnvelopeResponse<PostTransferTaxResponseDto>> transferTax(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestBody PostTransferTaxRequestDto postTransferTaxRequestDto) {
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<PostTransferTaxResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(
+					fundService.transferTax(authenticatedMemberArgument.getMemberId(), postTransferTaxRequestDto)
 				)
 				.build());
 	}
