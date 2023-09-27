@@ -2,11 +2,13 @@ package com.pangpang.airbank.domain.account.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pangpang.airbank.domain.account.dto.GetAccountAmountResponseDto;
 import com.pangpang.airbank.domain.account.dto.PostEnrollAccountRequestDto;
 import com.pangpang.airbank.domain.account.service.AccountService;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
@@ -47,6 +49,26 @@ public class AccountController {
 				.data(
 					accountService.saveMainAccount(postEnrollAccountRequestDto,
 						authenticatedMemberArgument.getMemberId())
+				)
+				.build());
+	}
+
+	/**
+	 *  메인 계좌 잔액 조회
+	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 * @return ResponseEntity<EnvelopeResponse < GetAccountAmountResponseDto>>
+	 * @see AccountService
+	 */
+	@GetMapping()
+	public ResponseEntity<EnvelopeResponse<GetAccountAmountResponseDto>> getAccountAmount(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
+
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(EnvelopeResponse.<GetAccountAmountResponseDto>builder()
+				.code(HttpStatus.CREATED.value())
+				.data(
+					accountService.getAccountAmount(authenticatedMemberArgument.getMemberId())
 				)
 				.build());
 	}
