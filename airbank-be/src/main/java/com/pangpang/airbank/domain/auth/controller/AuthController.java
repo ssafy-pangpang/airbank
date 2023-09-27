@@ -25,7 +25,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -70,23 +69,12 @@ public class AuthController {
 	}
 
 	/**
-	 *  auth별 로그아웃 창 출력
-	 *
-	 * @param response HttpServletResponse
-	 * @return 카카오 로그아웃 창으로 redirect
-	 */
-	@GetMapping("/logout")
-	public void logout(HttpServletResponse response) {
-		authService.sendLogoutRedirectUrl(response);
-	}
-
-	/**
-	 *  사용자 로그아웃 요청 처리
+	 *  사용자 로그아웃
 	 *
 	 * @param request HttpServletRequest
-	 *        authenticatedMemberArgument AuthenticatedMemberArgument
+	 * @return 로그아웃한 사용자의 이름
 	 */
-	@GetMapping("/logout/callback")
+	@GetMapping("/logout")
 	public ResponseEntity<EnvelopeResponse<GetLogoutResponseDto>> logout(HttpServletRequest request,
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
 		request.getSession().invalidate();
