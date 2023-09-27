@@ -4,13 +4,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pangpang.airbank.domain.account.domain.Account;
+import com.pangpang.airbank.domain.account.dto.GetAccountAmountResponseDto;
 import com.pangpang.airbank.domain.account.dto.PostEnrollAccountRequestDto;
 import com.pangpang.airbank.domain.account.repository.AccountRepository;
+import com.pangpang.airbank.domain.fund.repository.FundManagementRepository;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.global.common.api.nh.NHApi;
 import com.pangpang.airbank.global.common.api.nh.dto.GetCheckFinAccountResponseDto;
 import com.pangpang.airbank.global.common.api.nh.dto.GetFinAccountResponseDto;
+import com.pangpang.airbank.global.common.api.nh.dto.GetInquireBalanceResponseDto;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.info.AccountErrorInfo;
@@ -25,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AccountServiceImpl implements AccountService {
 	private final MemberRepository memberRepository;
 	private final AccountRepository accountRepository;
+	private final FundManagementRepository fundManagementRepository;
 	private final NHApi nhApi;
 
 	/**
@@ -108,6 +112,28 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	public String getFinAccountNumber(Long memberId, AccountType type) {
 		return getAccount(memberId, type).getFinAccountNumber();
+	}
+
+	/**
+	 *  메인 계좌의 잔액 조회
+	 *
+	 * @param memberId Long
+	 * @return GetAccountAmountResponseDto
+	 * @see NHApi
+	 * @see GetInquireBalanceResponseDto
+	 */
+	@Override
+	public GetAccountAmountResponseDto getAccountAmount(Long memberId) {
+		AccountType accountType = AccountType.ofName("MAIN_ACCOUNT");
+		String finAccount = getFinAccountNumber(memberId, accountType);
+
+		GetInquireBalanceResponseDto response;
+		try {
+			response = nhApi.getAccountAmount(finAccount);
+		} catch (Exception e) {
+			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
+		}
+		return GetAccountAmountResponseDto.from(response);
 	}
 
 	private Account getAccount(Long memberId, AccountType type) {

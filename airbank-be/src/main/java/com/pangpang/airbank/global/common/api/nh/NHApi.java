@@ -12,6 +12,8 @@ import com.pangpang.airbank.global.common.api.nh.dto.GetCheckFinAccountRequestDt
 import com.pangpang.airbank.global.common.api.nh.dto.GetCheckFinAccountResponseDto;
 import com.pangpang.airbank.global.common.api.nh.dto.GetFinAccountRequestDto;
 import com.pangpang.airbank.global.common.api.nh.dto.GetFinAccountResponseDto;
+import com.pangpang.airbank.global.common.api.nh.dto.GetInquireBalanceRequestDto;
+import com.pangpang.airbank.global.common.api.nh.dto.GetInquireBalanceResponseDto;
 import com.pangpang.airbank.global.common.api.nh.dto.PostDepositTransferRequestDto;
 import com.pangpang.airbank.global.common.api.nh.dto.PostDepositTransferResponseDto;
 import com.pangpang.airbank.global.common.api.nh.dto.PostWithdrawalTransferRequestDto;
@@ -136,5 +138,25 @@ public class NHApi {
 			.bodyToMono(String.class)
 			.block();
 		return objectMapper.readValue(result, PostDepositTransferResponseDto.class);
+	}
+
+	/**
+	 *  finAccount로 잔액 조회
+	 *
+	 * @param finAccount String
+	 * @return GetInquireBalanceResponseDto
+	 */
+	public GetInquireBalanceResponseDto getAccountAmount(String finAccount) throws JsonProcessingException {
+		String result = WebClient.create()
+			.post()
+			.uri(nhApiConstantProvider.getUrl() + "/InquireBalance.nh")
+			.header("Content-type", "application/json;charset=utf-8")
+			.bodyValue(
+				objectMapper.writeValueAsString(GetInquireBalanceRequestDto.of(nhApiConstantProvider,
+					nhApiManagementService.updateIsTuno(), finAccount)))
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
+		return objectMapper.readValue(result, GetInquireBalanceResponseDto.class);
 	}
 }
