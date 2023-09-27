@@ -48,6 +48,7 @@ public class MemberController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "사용자 조회 성공",
 			content = @Content(schema = @Schema(implementation = GetMemberResponseDto.class))),
+		@ApiResponse(responseCode = "1100", description = "인증이 유효하지 않습니다.", content = @Content),
 		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
 	})
 	@GetMapping()
@@ -72,6 +73,7 @@ public class MemberController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "회원정보 수정 성공",
 			content = @Content(schema = @Schema(implementation = PatchMemberResponseDto.class))),
+		@ApiResponse(responseCode = "1100", description = "인증이 유효하지 않습니다.", content = @Content),
 		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
 		@ApiResponse(responseCode = "1502", description = "이미 가입된 휴대폰 번호입니다.", content = @Content)
 	})
@@ -99,8 +101,10 @@ public class MemberController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "신용등급 조회 성공",
 			content = @Content(schema = @Schema(implementation = GetCreditResponseDto.class))),
-		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
-		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content)
+		@ApiResponse(responseCode = "1100", description = "인증이 유효하지 않습니다.", content = @Content),
+		@ApiResponse(responseCode = "1306", description = "사용자가 해당 그룹에 속해있지 않습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
 	})
 	@CheckGroup
 	@GetMapping("/credit")
@@ -112,34 +116,6 @@ public class MemberController {
 			.body(EnvelopeResponse.<GetCreditResponseDto>builder()
 				.code(HttpStatus.OK.value())
 				.data(memberService.getCreditRating(authenticatedMemberArgument.getMemberId(), groupId))
-				.build());
-	}
-
-	/**
-	 *  신용점수 변동 내역 조회
-	 *
-	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
-	 *        groupId Long
-	 * @return 신용점수 변동 내역 리스트
-	 * @see com.pangpang.airbank.domain.member.dto.CreditHistoryElement
-	 */
-	@Operation(summary = "신용점수 변동내역 조회", description = "현재 부모-자녀 관계에 포함된 자녀의 신용점수 변동내역을 조회합니다.")
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "신용점수 변동내역 조회 성공",
-			content = @Content(schema = @Schema(implementation = GetCreditHistoryResponseDto.class))),
-		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
-		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content)
-	})
-	@CheckGroup
-	@GetMapping("/credit-history")
-	public ResponseEntity<EnvelopeResponse<GetCreditHistoryResponseDto>> getCreditHistory(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
-		@RequestParam("group_id") Long groupId) {
-
-		return ResponseEntity.ok()
-			.body(EnvelopeResponse.<GetCreditHistoryResponseDto>builder()
-				.code(HttpStatus.OK.value())
-				.data(memberService.getCreditHistory(authenticatedMemberArgument.getMemberId(), groupId))
 				.build());
 	}
 
@@ -159,6 +135,36 @@ public class MemberController {
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<Void>builder()
 				.code(HttpStatus.OK.value())
+				.build());
+	}
+
+	/**
+	 *  신용점수 변동 내역 조회
+	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 *        groupId Long
+	 * @return 신용점수 변동 내역 리스트
+	 * @see com.pangpang.airbank.domain.member.dto.CreditHistoryElement
+	 */
+	@Operation(summary = "신용점수 변동내역 조회", description = "현재 부모-자녀 관계에 포함된 자녀의 신용점수 변동내역을 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "신용점수 변동내역 조회 성공",
+			content = @Content(schema = @Schema(implementation = GetCreditHistoryResponseDto.class))),
+		@ApiResponse(responseCode = "1100", description = "인증이 유효하지 않습니다.", content = @Content),
+		@ApiResponse(responseCode = "1306", description = "사용자가 해당 그룹에 속해있지 않습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
+	})
+	@CheckGroup
+	@GetMapping("/credit-history")
+	public ResponseEntity<EnvelopeResponse<GetCreditHistoryResponseDto>> getCreditHistory(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestParam("group_id") Long groupId) {
+
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<GetCreditHistoryResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(memberService.getCreditHistory(authenticatedMemberArgument.getMemberId(), groupId))
 				.build());
 	}
 }
