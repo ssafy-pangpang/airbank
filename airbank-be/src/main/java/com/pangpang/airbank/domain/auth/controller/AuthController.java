@@ -48,7 +48,7 @@ public class AuthController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "로그인/회원가입 성공",
 			content = @Content(schema = @Schema(implementation = PostLoginResponseDto.class))),
-		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
+		@ApiResponse(responseCode = "1101", description = "인증 식별자가 유효하지 않습니다.", content = @Content)
 	})
 	@PostMapping("/login")
 	public ResponseEntity<EnvelopeResponse<PostLoginResponseDto>> login(HttpServletRequest request,
@@ -74,6 +74,12 @@ public class AuthController {
 	 * @param request HttpServletRequest
 	 * @return 로그아웃한 사용자의 이름
 	 */
+	@Operation(summary = "사용자 로그아웃", description = "에어뱅크 서비스 로그아웃을 진행합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "로그아웃 성공",
+			content = @Content(schema = @Schema(implementation = GetLogoutResponseDto.class))),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
+	})
 	@GetMapping("/logout")
 	public ResponseEntity<EnvelopeResponse<GetLogoutResponseDto>> logout(HttpServletRequest request,
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
