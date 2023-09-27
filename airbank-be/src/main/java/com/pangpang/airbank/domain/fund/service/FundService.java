@@ -1,5 +1,6 @@
 package com.pangpang.airbank.domain.fund.service;
 
+import com.pangpang.airbank.domain.fund.dto.GetConfiscationResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
@@ -12,4 +13,6 @@ public interface FundService {
 
 	PostTransferBonusResponseDto transferBonus(PostTransferBonusRequestDto postTransferBonusRequestDto, Long memberId,
 		Long groupId);
+
+	GetConfiscationResponseDto getConfiscation(Long groupId);
 }
