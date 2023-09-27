@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pangpang.airbank.domain.fund.dto.GetConfiscationResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
@@ -117,6 +118,27 @@ public class FundController {
 					fundService.transferBonus(postTransferBonusRequestDto, authenticatedMemberArgument.getMemberId(),
 						groupId)
 				)
+				.build());
+	}
+
+	/**
+	 *  압류 조회
+	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 * @param groupId Long
+	 * @return ResponseEntity<EnvelopeResponse < GetConfiscationResponseDto>>
+	 * @see FundService
+	 */
+	@CheckGroup
+	@GetMapping("/confiscation")
+	public ResponseEntity<EnvelopeResponse<GetConfiscationResponseDto>> getConfiscation(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestParam("group_id") Long groupId) {
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<GetConfiscationResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(fundService.getConfiscation((groupId)))
 				.build());
 	}
 }

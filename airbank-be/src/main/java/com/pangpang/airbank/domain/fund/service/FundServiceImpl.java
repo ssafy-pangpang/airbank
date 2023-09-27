@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pangpang.airbank.domain.fund.domain.Confiscation;
 import com.pangpang.airbank.domain.fund.domain.Interest;
 import com.pangpang.airbank.domain.account.domain.Account;
 import com.pangpang.airbank.domain.account.dto.TransferRequestDto;
@@ -12,8 +13,10 @@ import com.pangpang.airbank.domain.account.dto.TransferResponseDto;
 import com.pangpang.airbank.domain.account.repository.AccountRepository;
 import com.pangpang.airbank.domain.account.service.TransferService;
 import com.pangpang.airbank.domain.fund.domain.Tax;
+import com.pangpang.airbank.domain.fund.dto.GetConfiscationResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
+import com.pangpang.airbank.domain.fund.repository.ConfiscationRepository;
 import com.pangpang.airbank.domain.fund.repository.InterestRepository;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusResponseDto;
@@ -37,6 +40,7 @@ public class FundServiceImpl implements FundService {
 	private final InterestRepository interestRepository;
 	private final GroupRepository groupRepository;
 	private final AccountRepository accountRepository;
+	private final ConfiscationRepository confiscationRepository;
 
 	/**
 	 *  현재 세금 현황 조회
@@ -110,5 +114,20 @@ public class FundServiceImpl implements FundService {
 				TransactionType.BONUS));
 
 		return PostTransferBonusResponseDto.from(transferResponseDto);
+	}
+
+	/**
+	 *  압류 조회
+	 *
+	 * @param groupId Long
+	 * @return GetConfiscationResponseDto
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public GetConfiscationResponseDto getConfiscation(Long groupId) {
+		Confiscation confiscation = confiscationRepository.findByGroupIdAndActivatedTrue(groupId)
+			.orElseGet(Confiscation::new);
+
+		return GetConfiscationResponseDto.from(confiscation);
 	}
 }

@@ -36,14 +36,20 @@ public class Confiscation {
 	private Long amount;
 
 	@NotNull
+	@Builder.Default
+	@ColumnDefault("0")
+	@Column
+	private Long repaidAmount = 0L;
+
+	@NotNull
 	@Column
 	private LocalDateTime startedAt;
 
 	@NotNull
 	@Builder.Default
-	@ColumnDefault("false")
+	@ColumnDefault("true")
 	@Column
-	private Boolean activated = Boolean.FALSE;
+	private Boolean activated = Boolean.TRUE;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
