@@ -19,4 +19,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	Optional<Member> findByOauthIdentifier(String oauthIdentifier);
 
 	Boolean existsByIdAndRoleEquals(Long id, MemberRole role);
+
+	Boolean existsByPhoneNumber(String phoneNumber);
 }
