@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
 import com.pangpang.airbank.domain.fund.service.FundService;
 import com.pangpang.airbank.global.aop.CheckGroup;
@@ -46,6 +47,29 @@ public class FundController {
 				.code(HttpStatus.OK.value())
 				.data(
 					fundService.getTax(authenticatedMemberArgument.getMemberId(), groupId)
+				)
+				.build());
+	}
+
+	/**
+	 *  이자 조회
+	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 * @param groupId Long
+	 * @return ResponseEntity<EnvelopeResponse < GetInterestResponseDto>>
+	 * @see FundService
+	 */
+	@CheckGroup
+	@GetMapping("/interest")
+	public ResponseEntity<EnvelopeResponse<GetInterestResponseDto>> getInterest(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestParam("group_id") Long groupId) {
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<GetInterestResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(
+					fundService.getInterest(authenticatedMemberArgument.getMemberId(), groupId)
 				)
 				.build());
 	}

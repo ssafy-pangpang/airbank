@@ -1,5 +1,6 @@
 package com.pangpang.airbank.domain.fund.domain;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.ColumnDefault;
@@ -35,18 +36,17 @@ public class Interest extends BaseTimeEntity {
 	@NotNull
 	@Column
 	private Long amount;
-
-	@NotNull
+	
 	@Column
 	private LocalDateTime paidAt;
 
 	@NotNull
 	@Column
-	private LocalDateTime billedAt;
+	private LocalDate billedAt;
 
 	@NotNull
 	@Column
-	private LocalDateTime expiredAt;
+	private LocalDate expiredAt;
 
 	@NotNull
 	@Builder.Default
