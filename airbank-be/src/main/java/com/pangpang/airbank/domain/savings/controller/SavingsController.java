@@ -109,11 +109,10 @@ public class SavingsController {
 		@ApiResponse(responseCode = "200", description = "티끌모으기 요청 수락/거절 성공",
 			content = @Content(schema = @Schema(implementation = PatchCommonSavingsResponseDto.class))),
 		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
-		@ApiResponse(responseCode = "1306", description = "사용자가 해당 그룹에 속해있지 않습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
 		@ApiResponse(responseCode = "1804", description = "티끌모으기 수락/거절 권한이 없습니다.", content = @Content),
 		@ApiResponse(responseCode = "1805", description = "등록 대기중인 티끌모으기를 찾을 수 없습니다.", content = @Content)
 	})
-	// @CheckGroup
 	@PatchMapping("/confirm")
 	public ResponseEntity<EnvelopeResponse<PatchCommonSavingsResponseDto>> confirmEnrollmentSavings(
 		@RequestBody PatchConfirmSavingsRequestDto patchConfirmSavingsRequestDto,

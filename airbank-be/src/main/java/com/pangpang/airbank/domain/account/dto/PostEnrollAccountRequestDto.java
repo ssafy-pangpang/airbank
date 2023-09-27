@@ -11,7 +11,7 @@ public class PostEnrollAccountRequestDto {
 	private String bankCode;
 	private String accountNumber;
 
-	public static PostEnrollAccountRequestDto fromGroup(String accountNumber) {
+	public static PostEnrollAccountRequestDto fromVirtualAccount(String accountNumber) {
 		return PostEnrollAccountRequestDto.builder()
 			.bankCode(BankCode.NONGHYUP_BANK.getCode())
 			.accountNumber(accountNumber)

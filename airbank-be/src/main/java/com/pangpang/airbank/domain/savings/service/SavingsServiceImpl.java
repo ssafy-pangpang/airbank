@@ -3,6 +3,7 @@ package com.pangpang.airbank.domain.savings.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pangpang.airbank.domain.account.service.AccountService;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
@@ -20,6 +21,7 @@ import com.pangpang.airbank.global.error.exception.GroupException;
 import com.pangpang.airbank.global.error.exception.SavingsException;
 import com.pangpang.airbank.global.error.info.GroupErrorInfo;
 import com.pangpang.airbank.global.error.info.SavingsErrorInfo;
+import com.pangpang.airbank.global.meta.domain.AccountType;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
 import com.pangpang.airbank.global.meta.domain.SavingsStatus;
 
@@ -34,6 +36,7 @@ public class SavingsServiceImpl implements SavingsService {
 	private final SavingsItemRepository savingsItemRepository;
 	private final GroupRepository groupRepository;
 	private final MemberRepository memberRepository;
+	private final AccountService accountService;
 
 	/**
 	 *  현재 진행중인 티끌모으기 정보를 조회하는 메소드
@@ -98,6 +101,7 @@ public class SavingsServiceImpl implements SavingsService {
 	 * @param groupId Long
 	 * @return PatchConfirmSavingsResponseDto
 	 * @see SavingsRepository
+	 * @see AccountService
 	 */
 	@Transactional
 	@Override
@@ -107,10 +111,16 @@ public class SavingsServiceImpl implements SavingsService {
 			throw new SavingsException(SavingsErrorInfo.CONFIRM_SAVINGS_PERMISSION_DENIE);
 		}
 
-		Savings savings = savingsRepository.findByGroupIdAndStatusEquals(groupId, SavingsStatus.PENDING)
+		Group group = groupRepository.findByIdWithChild(groupId)
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_ID));
+
+		Savings savings = savingsRepository.findByGroupIdAndStatusEquals(group.getId(), SavingsStatus.PENDING)
 			.orElseThrow(() -> new SavingsException(SavingsErrorInfo.NOT_FOUND_SAVINGS_IN_PENDING));
 
 		savings.confirmSavings(patchConfirmSavingsRequestDto);
+
+		// 티끌모으기 가상 계좌 생성
+		accountService.saveVirtualAccount(group.getChild().getId(), AccountType.SAVINGS_ACCOUNT);
 		return PatchCommonSavingsResponseDto.from(savings);
 	}
 

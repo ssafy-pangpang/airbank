@@ -34,4 +34,9 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 	Boolean existsByIdAndPartnerId(Long id, Long partnerId);
 
 	Optional<Group> findByChild(Member child);
+
+	@Query("select g from group g "
+		+ "join fetch g.child "
+		+ "where g.id = :id ")
+	Optional<Group> findByIdWithChild(@Param("id") Long id);
 }

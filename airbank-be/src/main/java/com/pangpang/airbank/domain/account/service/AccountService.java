@@ -8,7 +8,7 @@ import com.pangpang.airbank.global.meta.domain.AccountType;
 public interface AccountService {
 	CommonIdResponseDto saveMainAccount(PostEnrollAccountRequestDto postEnrollAccountRequestDto, Long memberId);
 
-	void saveLoanAccount(Long memberId);
+	void saveVirtualAccount(Long memberId, AccountType accountType);
 
 	String getAccountNumber(Long memberId, AccountType type);
 
