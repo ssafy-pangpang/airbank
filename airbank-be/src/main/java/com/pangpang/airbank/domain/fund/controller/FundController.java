@@ -14,6 +14,8 @@ import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusResponseDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferInterestRequestDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferTaxRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferTaxResponseDto;
 import com.pangpang.airbank.domain.fund.service.FundService;
@@ -81,6 +83,7 @@ public class FundController {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "세금 현황 조회 성공",
 			content = @Content(schema = @Schema(implementation = PostTransferTaxResponseDto.class))),
+		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
 		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
 		@ApiResponse(responseCode = "1204", description = "송금된 금액이 지정 금액과 다릅니다.", content = @Content),
 		@ApiResponse(responseCode = "1205", description = "송금될 금액이 없습니다.", content = @Content),
@@ -124,6 +127,38 @@ public class FundController {
 				.code(HttpStatus.OK.value())
 				.data(
 					fundService.getInterest(authenticatedMemberArgument.getMemberId(), groupId)
+				)
+				.build());
+	}
+
+	/**
+	 * 이자 전체 상환
+	 *
+	 * @param authenticatedMemberArgument
+	 * @param postTransferInterestRequestDto
+	 * @return ResponseEntity<EnvelopeResponse < PostTransferInterestResponseDto>>
+	 */
+	@Operation(summary = "이자 상환", description = "사용자의 전체 이자를 상환합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "이자 상환 성공",
+			content = @Content(schema = @Schema(implementation = PostTransferTaxResponseDto.class))),
+		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1204", description = "송금된 금액이 지정 금액과 다릅니다.", content = @Content),
+		@ApiResponse(responseCode = "1205", description = "송금될 금액이 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
+	@PostMapping("/interest")
+	public ResponseEntity<EnvelopeResponse<PostTransferInterestResponseDto>> transferInterest(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestBody PostTransferInterestRequestDto postTransferInterestRequestDto) {
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<PostTransferInterestResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(
+					fundService.transferInterest(authenticatedMemberArgument.getMemberId(),
+						postTransferInterestRequestDto)
 				)
 				.build());
 	}

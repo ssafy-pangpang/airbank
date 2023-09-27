@@ -6,23 +6,25 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.pangpang.airbank.domain.fund.domain.Confiscation;
-import com.pangpang.airbank.domain.fund.domain.Interest;
 import com.pangpang.airbank.domain.account.domain.Account;
 import com.pangpang.airbank.domain.account.dto.TransferRequestDto;
 import com.pangpang.airbank.domain.account.dto.TransferResponseDto;
 import com.pangpang.airbank.domain.account.repository.AccountRepository;
 import com.pangpang.airbank.domain.account.service.TransferService;
+import com.pangpang.airbank.domain.fund.domain.Confiscation;
+import com.pangpang.airbank.domain.fund.domain.Interest;
 import com.pangpang.airbank.domain.fund.domain.Tax;
 import com.pangpang.airbank.domain.fund.dto.GetConfiscationResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
-import com.pangpang.airbank.domain.fund.repository.ConfiscationRepository;
-import com.pangpang.airbank.domain.fund.repository.InterestRepository;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusResponseDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferInterestRequestDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferTaxRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferTaxResponseDto;
+import com.pangpang.airbank.domain.fund.repository.ConfiscationRepository;
+import com.pangpang.airbank.domain.fund.repository.InterestRepository;
 import com.pangpang.airbank.domain.fund.repository.TaxRepository;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
@@ -159,6 +161,56 @@ public class FundServiceImpl implements FundService {
 			groupId, endDate, endDate).orElseGet(Interest::new);
 
 		return GetInterestResponseDto.of(interest, overdueAmount);
+	}
+
+	/**
+	 *  이자 전체 상환
+	 *
+	 * @param memberId Long
+	 * @param postTransferInterestRequestDto PostTransferInterestRequestDto
+	 * @return PostTransferInterestResponseDto
+	 * @see GroupRepository
+	 * @see InterestRepository
+	 * @see TransferService
+	 */
+	@Transactional
+	@Override
+	public PostTransferInterestResponseDto transferInterest(Long memberId,
+		PostTransferInterestRequestDto postTransferInterestRequestDto) {
+
+		if (postTransferInterestRequestDto.getAmount().equals(0L)) {
+			throw new FundException(FundErrorInfo.NOT_FOUND_TRANSFER_AMOUNT);
+		}
+		Group group = groupRepository.findByChildIdAndActivatedTrue(memberId)
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_ID));
+
+		// 이자 총 합과 송금 금액이 같은지 확인
+		List<Interest> interestList = interestRepository.findAllByGroupAndActivatedFalseAndBilledAtLessThanEqual(group,
+			LocalDate.now());
+		Long sumInterest = 0L;
+		for (Interest interest : interestList) {
+			sumInterest += interest.getAmount();
+		}
+
+		if (!postTransferInterestRequestDto.getAmount().equals(sumInterest)) {
+			throw new FundException(FundErrorInfo.NOT_MATCH_AMOUNT);
+		}
+
+		// 송금
+		Account senderAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.MAIN_ACCOUNT)
+			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+		Account receiverAccount = accountRepository.findByMemberIdAndType(group.getParent().getId(),
+			AccountType.MAIN_ACCOUNT).orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+		TransferResponseDto transferResponseDto = transferService.transfer(
+			TransferRequestDto.of(senderAccount, receiverAccount, postTransferInterestRequestDto.getAmount(),
+				TransactionType.INTEREST));
+
+		// 이자 납부 처리
+		for (Interest interest : interestList) {
+			interest.updateActivated(true);
+		}
+
+		return PostTransferInterestResponseDto.of(transferResponseDto, TransactionType.INTEREST);
 	}
 
 	/**
