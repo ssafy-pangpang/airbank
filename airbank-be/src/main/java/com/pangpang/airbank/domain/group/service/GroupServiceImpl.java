@@ -12,7 +12,6 @@ import com.pangpang.airbank.domain.fund.domain.FundManagement;
 import com.pangpang.airbank.domain.fund.repository.FundManagementRepository;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.dto.CommonFundManagementRequestDto;
-import com.pangpang.airbank.domain.group.dto.CommonIdResponseDto;
 import com.pangpang.airbank.domain.group.dto.GetPartnersResponseDto;
 import com.pangpang.airbank.domain.group.dto.PatchConfirmChildRequestDto;
 import com.pangpang.airbank.domain.group.dto.PatchFundManagementResponseDto;
@@ -20,6 +19,7 @@ import com.pangpang.airbank.domain.group.dto.PostEnrollChildRequestDto;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
+import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
 import com.pangpang.airbank.global.error.exception.MemberException;
@@ -90,7 +90,7 @@ public class GroupServiceImpl implements GroupService {
 		Member childMember = memberRepository.findByChildPhoneNumber(postEnrollChildRequestDto.getPhoneNumber())
 			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_CHILD_MEMBER_BY_PHONE_NUMBER));
 
-		groupRepository.findByChildIdAndActivatedTrue(childMember.getId()).ifPresent((group) -> {
+		groupRepository.findByChild(childMember).ifPresent((group) -> {
 			if (group.getActivated()) {
 				throw new GroupException(GroupErrorInfo.ALREADY_HAD_PARENT);
 			}
@@ -98,7 +98,8 @@ public class GroupServiceImpl implements GroupService {
 		});
 
 		Group group = Group.of(member, childMember);
-		return new CommonIdResponseDto(groupRepository.save(group).getId());
+		groupRepository.save(group);
+		return CommonIdResponseDto.from(groupRepository.save(group).getId());
 	}
 
 	/**
@@ -121,7 +122,7 @@ public class GroupServiceImpl implements GroupService {
 		}
 
 		Group group = groupRepository.findByIdAndChildIdAndActivatedFalse(groupId, memberId)
-			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD_ID));
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
 
 		if (patchConfirmChildRequestDto.getIsAccept()) {
 			group.setActivated(true);
@@ -129,11 +130,11 @@ public class GroupServiceImpl implements GroupService {
 			// Loan 계좌 생성
 
 			accountService.saveLoanAccount(memberId);
-			return new CommonIdResponseDto(group.getId());
+			return CommonIdResponseDto.from(group.getId());
 		}
 
 		group.setActivated(false);
-		return new CommonIdResponseDto(group.getId());
+		return CommonIdResponseDto.from(group.getId());
 	}
 
 	/**
@@ -168,7 +169,8 @@ public class GroupServiceImpl implements GroupService {
 		}
 
 		FundManagement fundManagement = FundManagement.of(group, commonFundManagementRequestDto);
-		return new CommonIdResponseDto(fundManagementRepository.save(fundManagement).getId());
+		fundManagementRepository.save(fundManagement);
+		return CommonIdResponseDto.from(fundManagement.getId());
 	}
 
 	/**
@@ -201,7 +203,7 @@ public class GroupServiceImpl implements GroupService {
 			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_PARENT_ID));
 
 		FundManagement fundManagement = fundManagementRepository.findByGroupId(group.getId())
-			.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_FUND_MANAGEMENT_BY_GROUP_ID));
+			.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_FUND_MANAGEMENT_BY_GROUP));
 
 		fundManagement.updateFundManagement(commonFundManagementRequestDto);
 		return PatchFundManagementResponseDto.from(commonFundManagementRequestDto);

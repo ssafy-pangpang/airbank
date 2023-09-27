@@ -33,7 +33,7 @@ public class NotificationServiceImpl implements NotificationService {
 	@Override
 	public GetNotificationResponseDto inquireNotification(Long memberId, Long groupId) {
 		Group group = groupRepository.findById(groupId)
-			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD_ID));
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
 
 		Long partnerId = group.getPartnerMember(memberId).getId();
 		NotificationGroup notificationGroup = notificationGroupRepository.findById(

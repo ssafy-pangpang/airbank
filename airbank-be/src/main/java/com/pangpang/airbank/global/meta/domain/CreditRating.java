@@ -56,6 +56,6 @@ public enum CreditRating {
 		if (creditScore >= TEN.minScore && creditScore <= TEN.maxScore) {
 			return TEN;
 		}
-		return null;
+		return TEN;
 	}
 }

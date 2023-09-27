@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.pangpang.airbank.domain.group.domain.Group;
+import com.pangpang.airbank.domain.member.domain.Member;
 
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Long> {
@@ -31,4 +32,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 	@Query("select case when count(m) > 0 then true else false end from group m "
 		+ "where m.id = :id and (m.parent.id = :partnerId or m.child.id = :partnerId) and m.activated = true")
 	Boolean existsByIdAndPartnerId(Long id, Long partnerId);
+
+	Optional<Group> findByChild(Member child);
 }

@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 public class CommonIdResponseDto {
 	private Long id;
 
-	public static CommonIdResponseDto of(Long id) {
+	public static CommonIdResponseDto from(Long id) {
 		return CommonIdResponseDto.builder()
 			.id(id)
 			.build();
