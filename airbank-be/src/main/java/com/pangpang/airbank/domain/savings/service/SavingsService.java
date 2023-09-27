@@ -1,11 +1,11 @@
 package com.pangpang.airbank.domain.savings.service;
 
-import com.pangpang.airbank.domain.group.dto.CommonIdResponseDto;
 import com.pangpang.airbank.domain.savings.dto.GetCurrentSavingsResponseDto;
 import com.pangpang.airbank.domain.savings.dto.PatchCancelSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PatchCommonSavingsResponseDto;
 import com.pangpang.airbank.domain.savings.dto.PatchConfirmSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PostSaveSavingsRequestDto;
+import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 
 public interface SavingsService {
 	GetCurrentSavingsResponseDto getCurrentSavings(Long groupId);

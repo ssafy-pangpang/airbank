@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pangpang.airbank.domain.group.dto.CommonFundManagementRequestDto;
-import com.pangpang.airbank.domain.group.dto.CommonIdResponseDto;
 import com.pangpang.airbank.domain.group.dto.GetPartnersResponseDto;
 import com.pangpang.airbank.domain.group.dto.PatchConfirmChildRequestDto;
 import com.pangpang.airbank.domain.group.dto.PatchFundManagementResponseDto;
 import com.pangpang.airbank.domain.group.dto.PostEnrollChildRequestDto;
 import com.pangpang.airbank.domain.group.service.GroupService;
+import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 

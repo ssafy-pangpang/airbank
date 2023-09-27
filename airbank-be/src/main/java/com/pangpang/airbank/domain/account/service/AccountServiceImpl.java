@@ -50,7 +50,7 @@ public class AccountServiceImpl implements AccountService {
 
 		// 핀-어카운트 저장
 		saveFinAccount(account, postEnrollAccountRequestDto);
-		return CommonIdResponseDto.of(account.getId());
+		return CommonIdResponseDto.from(account.getId());
 	}
 
 	/**

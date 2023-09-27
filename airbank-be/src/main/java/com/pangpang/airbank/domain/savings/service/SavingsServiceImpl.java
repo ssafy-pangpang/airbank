@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pangpang.airbank.domain.group.domain.Group;
-import com.pangpang.airbank.domain.group.dto.CommonIdResponseDto;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.domain.savings.domain.Savings;
@@ -16,6 +15,7 @@ import com.pangpang.airbank.domain.savings.dto.PatchConfirmSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PostSaveSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.repository.SavingsItemRepository;
 import com.pangpang.airbank.domain.savings.repository.SavingsRepository;
+import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.error.exception.GroupException;
 import com.pangpang.airbank.global.error.exception.SavingsException;
 import com.pangpang.airbank.global.error.info.GroupErrorInfo;
@@ -73,7 +73,7 @@ public class SavingsServiceImpl implements SavingsService {
 		}
 
 		Group group = groupRepository.findByChildIdAndActivatedTrue(memberId)
-			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD_ID));
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
 
 		if (savingsRepository.existsByGroupIdAndStatusEquals(group.getId(), SavingsStatus.PENDING)) {
 			throw new SavingsException(SavingsErrorInfo.ALREADY_SAVINGS_IN_PENDING);
@@ -88,7 +88,7 @@ public class SavingsServiceImpl implements SavingsService {
 
 		savingsRepository.save(savings);
 		savingsItemRepository.save(savingsItem);
-		return new CommonIdResponseDto(savings.getId());
+		return CommonIdResponseDto.from(savings.getId());
 	}
 
 	/**

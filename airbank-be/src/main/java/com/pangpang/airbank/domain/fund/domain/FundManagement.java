@@ -76,6 +76,10 @@ public class FundManagement {
 		this.loanLimit = commonFundManagementRequestDto.getLoanLimit();
 	}
 
+	public void plusLoanAmount(Long loanAmount) {
+		this.loanAmount += loanAmount;
+	}
+
 	public static FundManagement of(Group group,
 		CommonFundManagementRequestDto commonFundManagementRequestDto) {
 		return FundManagement.builder()
