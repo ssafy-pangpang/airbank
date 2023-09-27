@@ -54,7 +54,7 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	/**
-	 *  사용자가에게 사용 가능한 땡겨쓰기 계좌를 발급해주는 메소드
+	 *  사용자가에게 사용 가능한 땡겨쓰기, 티끌모으기 가상 계좌를 발급해주는 메소드
 	 *
 	 * @param memberId Long
 	 * @return CommonIdResponseDto
@@ -63,11 +63,11 @@ public class AccountServiceImpl implements AccountService {
 	 */
 	@Override
 	@Transactional
-	public void saveLoanAccount(Long memberId) {
-		Account account = accountRepository.findFirstByMemberIsNull()
+	public void saveVirtualAccount(Long memberId, AccountType type) {
+		Account account = accountRepository.findFirstByMemberIsNullAndType(type)
 			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_AVAILABLE_ACCOUNT));
 
-		PostEnrollAccountRequestDto postEnrollAccountRequestDto = PostEnrollAccountRequestDto.fromGroup(
+		PostEnrollAccountRequestDto postEnrollAccountRequestDto = PostEnrollAccountRequestDto.fromVirtualAccount(
 			account.getAccountNumber());
 
 		saveFinAccount(account, postEnrollAccountRequestDto);
