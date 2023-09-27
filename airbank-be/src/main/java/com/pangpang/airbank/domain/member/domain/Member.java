@@ -5,7 +5,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import com.pangpang.airbank.domain.BaseTimeEntity;
-import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
+import com.pangpang.airbank.domain.auth.dto.PostLoginRequestDto;
 import com.pangpang.airbank.global.meta.converter.MemberRoleConverter;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
 
@@ -74,9 +74,9 @@ public class Member extends BaseTimeEntity {
 
 	public static Member from(PostLoginRequestDto postLoginRequestDto) {
 		return Member.builder()
-			.oauthIdentifier(postLoginRequestDto.getId())
-			.imageUrl(getImageUrl(postLoginRequestDto.getKakaoAccount().getProfile().getProfileImageUrl(),
-				postLoginRequestDto.getKakaoAccount().getProfile().getIsDefaultImage()))
+			.oauthIdentifier(postLoginRequestDto.getOauthIdentifier())
+			.imageUrl(getImageUrl(postLoginRequestDto.getImageUrl(),
+				postLoginRequestDto.getIsDefaultImage()))
 			.build();
 	}
 

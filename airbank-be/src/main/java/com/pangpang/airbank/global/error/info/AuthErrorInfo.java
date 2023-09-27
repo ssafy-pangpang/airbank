@@ -7,8 +7,7 @@ import lombok.Getter;
 @Getter
 public enum AuthErrorInfo {
 	UNAUTHENTICATED(HttpStatus.UNAUTHORIZED, 1100, "인증이 유효하지 않습니다."),
-	AUTH_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1101, "인증 서버와의 통신에 실패했습니다."),
-	INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, 1102, "인증 코드가 유효하지 않습니다.");
+	INVALID_OAUTHIDENTIFIER(HttpStatus.BAD_REQUEST, 1101, "인증 식별자가 유효하지 않습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;

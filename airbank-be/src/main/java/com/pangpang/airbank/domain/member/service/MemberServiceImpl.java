@@ -8,17 +8,17 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
+import com.pangpang.airbank.domain.auth.dto.PostLoginRequestDto;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.domain.CreditHistory;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.dto.GetCreditHistoryResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetCreditResponseDto;
-import com.pangpang.airbank.domain.member.dto.GetLoginMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.GetMemberResponseDto;
+import com.pangpang.airbank.domain.member.dto.LoginMemberResponseDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberRequestDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberResponseDto;
-import com.pangpang.airbank.domain.member.dto.PostLoginRequestDto;
 import com.pangpang.airbank.domain.member.repository.CreditHistoryRepository;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.global.error.exception.GroupException;
@@ -41,7 +41,7 @@ public class MemberServiceImpl implements MemberService {
 	/**
 	 *  사용자 조회
 	 *
-	 * @param Long memberId
+	 * @param memberId Long
 	 * @return 사용자 정보
 	 */
 	@Transactional(readOnly = true)
@@ -54,16 +54,17 @@ public class MemberServiceImpl implements MemberService {
 	/**
 	 *  카카오 식별자로 사용자 조회
 	 *
-	 * @param PostLoginRequestDto postLoginRequestDto
+	 * @param postLoginRequestDto PostLoginRequestDto
 	 * @return 사용자 정보
 	 */
 	@Transactional(readOnly = true)
 	@Override
-	public GetLoginMemberResponseDto getMemberByOauthIdentifier(PostLoginRequestDto postLoginRequestDto) {
-		Optional<Member> optionalMember = memberRepository.findByOauthIdentifier(postLoginRequestDto.getId());
+	public LoginMemberResponseDto getMemberByOauthIdentifier(PostLoginRequestDto postLoginRequestDto) {
+		Optional<Member> optionalMember = memberRepository.findByOauthIdentifier(
+			postLoginRequestDto.getOauthIdentifier());
 
 		if (optionalMember.isPresent()) {
-			return GetLoginMemberResponseDto.from(optionalMember.get());
+			return LoginMemberResponseDto.from(optionalMember.get());
 		}
 		return saveMember(postLoginRequestDto);
 	}
@@ -71,34 +72,21 @@ public class MemberServiceImpl implements MemberService {
 	/**
 	 *  회원가입
 	 *
-	 * @param PostLoginRequestDto postLoginRequestDto
+	 * @param postLoginRequestDto PostLoginRequestDto
 	 * @return 가입한 사용자
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
-	public GetLoginMemberResponseDto saveMember(PostLoginRequestDto postLoginRequestDto) {
+	public LoginMemberResponseDto saveMember(PostLoginRequestDto postLoginRequestDto) {
 		Member member = memberRepository.save(Member.from(postLoginRequestDto));
 		creditHistoryService.saveCreditHistory(member);
-		return GetLoginMemberResponseDto.from(member);
-	}
-
-	/**
-	 *  사용자 oauth식별자 조회
-	 *
-	 * @param Long memberId
-	 * @return 사용자의 oauthIdentifier
-	 */
-	@Transactional(readOnly = true)
-	@Override
-	public String getMemberOauthIdentifier(Long memberId) {
-		Member member = getMemberByIdOrElseThrowException(memberId);
-		return member.getOauthIdentifier();
+		return LoginMemberResponseDto.from(member);
 	}
 
 	/**
 	 *  사용자 이름 조회
 	 *
-	 * @param Long memberId
+	 * @param memberId Long
 	 * @return 사용자 id
 	 */
 	@Transactional(readOnly = true)
@@ -111,8 +99,8 @@ public class MemberServiceImpl implements MemberService {
 	/**
 	 *  사용자 정보 수정
 	 *
-	 * @param Long memberId
-	 *        PatchMemberRequestDto patchMemberRequestDto
+	 * @param memberId Long
+	 *        patchMemberRequestDto PatchMemberRequestDto
 	 * @return 수정 후의 정보
 	 */
 	@Transactional
@@ -123,6 +111,7 @@ public class MemberServiceImpl implements MemberService {
 			member.setName(patchMemberRequestDto.getName());
 		}
 		if (patchMemberRequestDto.getPhoneNumber() != null) {
+			isDuplicatePhoneNumber(patchMemberRequestDto.getPhoneNumber());
 			member.setPhoneNumber(patchMemberRequestDto.getPhoneNumber());
 		}
 		if (patchMemberRequestDto.getRole() != null) {
@@ -132,9 +121,21 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	/**
+	 *  휴대폰 번호 중복 확인
+	 *
+	 * @param phoneNumber String
+	 * @return 이미 가입된 휴대폰 번호일 경우 예외 발생
+	 */
+	private void isDuplicatePhoneNumber(String phoneNumber) {
+		if (memberRepository.existsByPhoneNumber(phoneNumber)) {
+			throw new MemberException(MemberErrorInfo.DUPLICATE_PHONENUMBER);
+		}
+	}
+
+	/**
 	 *  사용자 조회 (내부 로직)
 	 *
-	 * @param Long memberId
+	 * @param memberId Long
 	 * @return 사용자 객체
 	 */
 	private Member getMemberByIdOrElseThrowException(Long memberId) {
@@ -230,7 +231,7 @@ public class MemberServiceImpl implements MemberService {
 	 * @param memberId Long
 	 *        groupId Long
 	 * @return 신용점수 변동 내역 리스트
-	 * @see CreditHistoryElement
+	 * @see com.pangpang.airbank.domain.member.dto.CreditHistoryElement
 	 */
 	@Transactional(readOnly = true)
 	@Override
