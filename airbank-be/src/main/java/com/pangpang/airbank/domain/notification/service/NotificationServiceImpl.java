@@ -29,6 +29,16 @@ public class NotificationServiceImpl implements NotificationService {
 	private final GroupRepository groupRepository;
 	private final MemberRepository memberRepository;
 
+	/**
+	 *  알림들 조회
+	 *
+	 * @param memberId Long
+	 * @param groupId Long
+	 * @return GetNotificationResponseDto
+	 * @see GroupRepository
+	 * @see NotificationGroup
+	 * @see NotificationElement
+	 */
 	@Transactional
 	@Override
 	public GetNotificationResponseDto inquireNotification(Long memberId, Long groupId) {
@@ -51,6 +61,12 @@ public class NotificationServiceImpl implements NotificationService {
 		return GetNotificationResponseDto.from(notificationElements);
 	}
 
+	/**
+	 * 알림 저장
+	 *
+	 * @param createNotificationDto
+	 * @see NotificationGroup
+	 */
 	@Transactional
 	@Override
 	public void saveNotification(CreateNotificationDto createNotificationDto) {
@@ -69,14 +85,32 @@ public class NotificationServiceImpl implements NotificationService {
 		notificationGroupRepository.save(notificationGroup);
 	}
 
+	/**
+	 * 알림 조회시, 알림 element의 리스트 생성
+	 *
+	 * @param notificationElements
+	 * @param notification
+	 */
 	private void addNotificationElements(List<NotificationElement> notificationElements, Notification notification) {
 		notificationElements.add(NotificationElement.from(notification));
 	}
 
+	/**
+	 * 알림 조회시 읽음 처리
+	 *
+	 * @param notification
+	 */
 	private void activateNotificationActivated(Notification notification) {
 		notification.activateActivated();
 	}
 
+	/**
+	 * 몽고DB의 ID 값 생성
+	 *
+	 * @param senderId
+	 * @param receiverId
+	 * @return String
+	 */
 	private String makeNotificationGroupId(Long senderId, Long receiverId) {
 		return senderId + ID_DELIMITER + receiverId;
 	}

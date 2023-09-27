@@ -19,6 +19,12 @@ import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/funds")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "funds", description = "자금 관리하는 API")
 public class FundController {
 	private final FundService fundService;
 
@@ -40,6 +47,11 @@ public class FundController {
 	 * @return ResponseEntity<EnvelopeResponse < GetTaxResponseDto>>
 	 * @see FundService
 	 */
+	@Operation(summary = "현재 세금 현황 조회", description = "사용자의 세금 현황을 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "세금 현황 조회 성공",
+			content = @Content(schema = @Schema(implementation = com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto.class))),
+	})
 	@CheckGroup
 	@GetMapping("/tax")
 	public ResponseEntity<EnvelopeResponse<GetTaxResponseDto>> getTax(
@@ -63,6 +75,11 @@ public class FundController {
 	 * @return ResponseEntity<EnvelopeResponse < GetInterestResponseDto>>
 	 * @see FundService
 	 */
+	@Operation(summary = "현재 이자 현황 조회", description = "사용자의 이자 현황을 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "이자 현황 조회 성공",
+			content = @Content(schema = @Schema(implementation = com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto.class))),
+	})
 	@CheckGroup
 	@GetMapping("/interest")
 	public ResponseEntity<EnvelopeResponse<GetInterestResponseDto>> getInterest(
