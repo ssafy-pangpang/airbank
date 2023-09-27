@@ -50,4 +50,13 @@ public class Tax {
 	@JoinColumn(name = "group_id",
 		foreignKey = @ForeignKey(name = "fk_tax_to_group_group_id"))
 	private Group group;
+
+	/**
+	 *  activated 갱신
+	 *
+	 * @param status Boolean
+	 */
+	public void updateActivated(Boolean status) {
+		this.activated = status;
+	}
 }

@@ -1,6 +1,7 @@
 package com.pangpang.airbank.domain.fund.service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,12 +21,16 @@ import com.pangpang.airbank.domain.fund.repository.ConfiscationRepository;
 import com.pangpang.airbank.domain.fund.repository.InterestRepository;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusResponseDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferTaxRequestDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferTaxResponseDto;
 import com.pangpang.airbank.domain.fund.repository.TaxRepository;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.global.error.exception.AccountException;
+import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
 import com.pangpang.airbank.global.error.info.AccountErrorInfo;
+import com.pangpang.airbank.global.error.info.FundErrorInfo;
 import com.pangpang.airbank.global.error.info.GroupErrorInfo;
 import com.pangpang.airbank.global.meta.domain.AccountType;
 import com.pangpang.airbank.global.meta.domain.TransactionType;
@@ -50,18 +55,87 @@ public class FundServiceImpl implements FundService {
 	 * @return GetTaxResponseDto
 	 * @see TaxRepository
 	 */
+	@Transactional(readOnly = true)
 	@Override
 	public GetTaxResponseDto getTax(Long memberId, Long groupId) {
 		LocalDate endDate = LocalDate.now();
 		// 밀린 세금의 기준 날짜
 		endDate = endDate.withDayOfMonth(1);
 
-		Long overdueAmount = taxRepository.findOverAmountsByGroupIdAndActivatedFalseAndExpiredAtLessThan(groupId,
-			endDate);
-		Tax tax = taxRepository.findByGroupIdAndActivatedFalseAndExpiredAtGreaterThanEqual(groupId, endDate)
-			.orElseGet(Tax::new);
+		Long overdueAmount = overdueTaxAmount(groupId, endDate);
+		Tax tax = curMonthTax(groupId, endDate);
 
 		return GetTaxResponseDto.of(tax, overdueAmount);
+	}
+
+	/**
+	 * 세금 송금
+	 *
+	 * @param memberId
+	 * @param postTransferTaxRequestDto
+	 * @return PostTransferTaxResponseDto
+	 * @see GroupRepository
+	 * @see AccountRepository
+	 * @see TransferService
+	 */
+	@Transactional
+	@Override
+	public PostTransferTaxResponseDto transferTax(Long memberId, PostTransferTaxRequestDto postTransferTaxRequestDto) {
+		if (postTransferTaxRequestDto.getAmount().equals(0L)) {
+			throw new FundException(FundErrorInfo.NOT_FOUND_TRANSFER_AMOUNT);
+		}
+		Group group = groupRepository.findByChildIdAndActivatedTrue(memberId)
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_ID));
+
+		// 세금 총 합과 송금 금액이 같은지 확인
+		List<Tax> taxList = taxRepository.findAllByGroupAndActivatedFalse(group);
+		Long sumTax = 0L;
+		for (Tax tax : taxList) {
+			sumTax += tax.getAmount();
+		}
+
+		if (!postTransferTaxRequestDto.getAmount().equals(sumTax)) {
+			throw new FundException(FundErrorInfo.NOT_MATCH_AMOUNT);
+		}
+
+		// 송금
+		Account senderAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.MAIN_ACCOUNT)
+			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+		Account receiverAccount = accountRepository.findByMemberIdAndType(group.getParent().getId(),
+			AccountType.MAIN_ACCOUNT).orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+		TransferResponseDto transferResponseDto = transferService.transfer(
+			TransferRequestDto.of(senderAccount, receiverAccount, postTransferTaxRequestDto.getAmount(),
+				TransactionType.TAX));
+
+		// 세금 납부 처리
+		for (Tax tax : taxList) {
+			tax.updateActivated(true);
+		}
+
+		return PostTransferTaxResponseDto.of(transferResponseDto, TransactionType.TAX);
+	}
+
+	/**
+	 * 밀린 세금 금액
+	 *
+	 * @param groupId
+	 * @param date
+	 * @return Long
+	 */
+	public Long overdueTaxAmount(Long groupId, LocalDate date) {
+		return taxRepository.findOverAmountsByGroupIdAndActivatedFalseAndExpiredAtLessThan(groupId, date);
+	}
+
+	/**
+	 * 이번 달 세금
+	 *
+	 * @param groupId
+	 * @param date
+	 * @return Tax
+	 */
+	public Tax curMonthTax(Long groupId, LocalDate date) {
+		return taxRepository.findByGroupIdAndActivatedFalseAndExpiredAtGreaterThanEqual(groupId, date)
+			.orElseGet(Tax::new);
 	}
 
 	/**
@@ -74,6 +148,7 @@ public class FundServiceImpl implements FundService {
 	 * @return GetInterestResponseDto
 	 * @see InterestRepository
 	 */
+	@Transactional(readOnly = true)
 	@Override
 	public GetInterestResponseDto getInterest(Long memberId, Long groupId) {
 		LocalDate endDate = LocalDate.now();

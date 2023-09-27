@@ -9,7 +9,9 @@ public enum FundErrorInfo {
 	NOT_FOUND_FUND_MANAGEMENT_BY_GROUP(HttpStatus.UNAUTHORIZED, 1200, "자금 관리를 찾을 수 없습니다."),
 	UPDATE_FUND_MANAGEMENT_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 1201, "자금 관리를 수정할 권한이 없습니다."),
 	SAVE_FUND_MANAGEMENT_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 1202, "자금 관리를 저장할 권한이 없습니다."),
-	ALREADY_EXISTS_FUND_MANAGEMENT(HttpStatus.CONFLICT, 1203, "자금 관리가 이미 존재합니다.");
+	ALREADY_EXISTS_FUND_MANAGEMENT(HttpStatus.CONFLICT, 1203, "자금 관리가 이미 존재합니다."),
+	NOT_MATCH_AMOUNT(HttpStatus.CONFLICT, 1204, "송금된 금액이 지정 금액과 다릅니다."),
+	NOT_FOUND_TRANSFER_AMOUNT(HttpStatus.UNAUTHORIZED, 1205, "송금될 금액이 없습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;
