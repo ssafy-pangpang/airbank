@@ -48,7 +48,7 @@ public class AccountController {
 	@Operation(summary = "계좌 등록", description = "사용자가 직접 계좌를 등록합니다.")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "201", description = "계좌 등록 성공",
-			content = @Content(schema = @Schema(implementation = com.pangpang.airbank.domain.group.dto.CommonIdResponseDto.class))),
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
 		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
 		@ApiResponse(responseCode = "1003", description = "Account 등록에 실패했습니다.", content = @Content),
 	})
@@ -77,7 +77,7 @@ public class AccountController {
 	@Operation(summary = "메인 계좌 잔액 조회", description = "사용자의 메인 계좌의 잔액을 조회합니다.")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "계좌 잔액 조회 성공",
-			content = @Content(schema = @Schema(implementation = com.pangpang.airbank.domain.account.dto.GetAccountAmountResponseDto.class))),
+			content = @Content(schema = @Schema(implementation = GetAccountAmountResponseDto.class))),
 		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
 	})
 	@GetMapping()
