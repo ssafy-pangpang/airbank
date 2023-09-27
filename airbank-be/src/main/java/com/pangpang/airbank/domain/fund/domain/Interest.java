@@ -36,7 +36,7 @@ public class Interest extends BaseTimeEntity {
 	@NotNull
 	@Column
 	private Long amount;
-	
+
 	@Column
 	private LocalDateTime paidAt;
 
@@ -59,4 +59,13 @@ public class Interest extends BaseTimeEntity {
 	@JoinColumn(name = "group_id",
 		foreignKey = @ForeignKey(name = "fk_interest_to_group_group_id"))
 	private Group group;
+
+	/**
+	 *  activated 갱신
+	 *
+	 * @param status Boolean
+	 */
+	public void updateActivated(Boolean status) {
+		this.activated = status;
+	}
 }

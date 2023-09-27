@@ -1,12 +1,14 @@
 package com.pangpang.airbank.domain.fund.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.pangpang.airbank.domain.fund.domain.Interest;
+import com.pangpang.airbank.domain.group.domain.Group;
 
 public interface InterestRepository extends JpaRepository<Interest, Long> {
 	// expiredAt 기준 밀린 이자
@@ -21,4 +23,6 @@ public interface InterestRepository extends JpaRepository<Interest, Long> {
 	Optional<Interest> findFirstByGroupIdAndActivatedFalseAndExpiredAtGreaterThanEqualAndBilledAtLessThanEqual(
 		Long groupId,
 		LocalDate expiredAt, LocalDate billedAt);
+
+	List<Interest> findAllByGroupAndActivatedFalseAndBilledAtLessThanEqual(Group group, LocalDate billedAt);
 }
