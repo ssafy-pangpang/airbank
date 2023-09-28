@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public enum MetaErrorInfo {
-	INVALID_METADATA(HttpStatus.BAD_REQUEST, 100, "유효하지 않은 메타데이터 입니다.");
+	INVALID_METADATA(HttpStatus.BAD_REQUEST, 1900, "유효하지 않은 메타데이터 입니다.");
 
 	private final HttpStatus status;
 	private final Integer code;

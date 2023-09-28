@@ -115,7 +115,7 @@ public class MemberServiceImpl implements MemberService {
 			member.setPhoneNumber(patchMemberRequestDto.getPhoneNumber());
 		}
 		if (patchMemberRequestDto.getRole() != null) {
-			member.setRole(patchMemberRequestDto.getRole());
+			member.setRole(MemberRole.ofName(patchMemberRequestDto.getRole()));
 		}
 		return PatchMemberResponseDto.from(member);
 	}

@@ -75,7 +75,8 @@ public class MemberController {
 			content = @Content(schema = @Schema(implementation = PatchMemberResponseDto.class))),
 		@ApiResponse(responseCode = "1100", description = "인증이 유효하지 않습니다.", content = @Content),
 		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
-		@ApiResponse(responseCode = "1502", description = "이미 가입된 휴대폰 번호입니다.", content = @Content)
+		@ApiResponse(responseCode = "1502", description = "이미 가입된 휴대폰 번호입니다.", content = @Content),
+		@ApiResponse(responseCode = "1900", description = "유효하지 않은 메타데이터 입니다.", content = @Content)
 	})
 	@PatchMapping()
 	public ResponseEntity<EnvelopeResponse<PatchMemberResponseDto>> updateMember(
