@@ -14,6 +14,8 @@ import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusResponseDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferConfiscationRequestDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferConfiscationResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferInterestRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferTaxRequestDto;
@@ -196,6 +198,13 @@ public class FundController {
 	 * @return ResponseEntity<EnvelopeResponse < GetConfiscationResponseDto>>
 	 * @see FundService
 	 */
+	@Operation(summary = "현재 압류 현황 조회", description = "사용자의 압류 현황을 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "압류 현황 조회 성공",
+			content = @Content(schema = @Schema(implementation = GetConfiscationResponseDto.class))),
+		@ApiResponse(responseCode = "1100", description = "인증이 유효하지 않습니다.", content = @Content),
+		@ApiResponse(responseCode = "1306", description = "사용자가 해당 그룹에 속해있지 않습니다.", content = @Content),
+	})
 	@CheckGroup
 	@GetMapping("/confiscation")
 	public ResponseEntity<EnvelopeResponse<GetConfiscationResponseDto>> getConfiscation(
@@ -206,6 +215,42 @@ public class FundController {
 			.body(EnvelopeResponse.<GetConfiscationResponseDto>builder()
 				.code(HttpStatus.OK.value())
 				.data(fundService.getConfiscation((groupId)))
+				.build());
+	}
+
+	/**
+	 *  변제금 송금
+	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 * @param postTransferConfiscationRequestDto PostTransferConfiscationRequestDto
+	 * @return ResponseEntity<EnvelopeResponse < PostTransferConfiscationResponseDto>>
+	 * @see FundService
+	 */
+	@Operation(summary = "변제금 송금", description = "압류금의 일부를 상환합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "변제금 송금 성공",
+			content = @Content(schema = @Schema(implementation = PostTransferConfiscationResponseDto.class))),
+		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1100", description = "인증이 유효하지 않습니다.", content = @Content),
+		@ApiResponse(responseCode = "1200", description = "자금 관리를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1205", description = "송금될 금액이 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1206", description = "변제금을 송금할 권한이 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1207", description = "압류중인 재산을 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1208", description = "상환할 수 있는 변제금을 초과했습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content)
+	})
+	@PostMapping("/confiscation")
+	public ResponseEntity<EnvelopeResponse<PostTransferConfiscationResponseDto>> transferConfiscation(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestBody PostTransferConfiscationRequestDto postTransferConfiscationRequestDto) {
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<PostTransferConfiscationResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(fundService.transferConfiscation(authenticatedMemberArgument.getMemberId(),
+					postTransferConfiscationRequestDto))
 				.build());
 	}
 }
