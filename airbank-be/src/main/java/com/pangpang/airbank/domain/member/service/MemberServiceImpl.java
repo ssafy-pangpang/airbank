@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
 import com.pangpang.airbank.domain.auth.dto.PostLoginRequestDto;
+import com.pangpang.airbank.domain.fund.service.ConfiscationConstantProvider;
+import com.pangpang.airbank.domain.fund.service.FundService;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.domain.CreditHistory;
@@ -36,13 +38,14 @@ public class MemberServiceImpl implements MemberService {
 	private final MemberRepository memberRepository;
 	private final GroupRepository groupRepository;
 	private final CreditHistoryRepository creditHistoryRepository;
-	private final CreditHistoryService creditHistoryService;
+	private final ConfiscationConstantProvider confiscationConstantProvider;
+	private final FundService fundService;
 
 	/**
 	 *  사용자 조회
 	 *
 	 * @param memberId Long
-	 * @return 사용자 정보
+	 * @return GetMemberResponseDto
 	 */
 	@Transactional(readOnly = true)
 	@Override
@@ -55,7 +58,8 @@ public class MemberServiceImpl implements MemberService {
 	 *  카카오 식별자로 사용자 조회
 	 *
 	 * @param postLoginRequestDto PostLoginRequestDto
-	 * @return 사용자 정보
+	 * @return LoginMemberResponseDto
+	 * @see MemberRepository
 	 */
 	@Transactional(readOnly = true)
 	@Override
@@ -73,13 +77,18 @@ public class MemberServiceImpl implements MemberService {
 	 *  회원가입
 	 *
 	 * @param postLoginRequestDto PostLoginRequestDto
-	 * @return 가입한 사용자
+	 * @return LoginMemberResponseDto
+	 * @see MemberRepository
+	 * @see CreditHistoryRepository
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
 	public LoginMemberResponseDto saveMember(PostLoginRequestDto postLoginRequestDto) {
 		Member member = memberRepository.save(Member.from(postLoginRequestDto));
-		creditHistoryService.saveCreditHistory(member);
+
+		// 신용점수 생성
+		creditHistoryRepository.save(CreditHistory.from(member));
+
 		return LoginMemberResponseDto.from(member);
 	}
 
@@ -87,7 +96,7 @@ public class MemberServiceImpl implements MemberService {
 	 *  사용자 이름 조회
 	 *
 	 * @param memberId Long
-	 * @return 사용자 id
+	 * @return GetLogoutResponseDto
 	 */
 	@Transactional(readOnly = true)
 	@Override
@@ -100,8 +109,8 @@ public class MemberServiceImpl implements MemberService {
 	 *  사용자 정보 수정
 	 *
 	 * @param memberId Long
-	 *        patchMemberRequestDto PatchMemberRequestDto
-	 * @return 수정 후의 정보
+	 * @param patchMemberRequestDto PatchMemberRequestDto
+	 * @return PatchMemberResponseDto
 	 */
 	@Transactional
 	@Override
@@ -124,7 +133,6 @@ public class MemberServiceImpl implements MemberService {
 	 *  휴대폰 번호 중복 확인
 	 *
 	 * @param phoneNumber String
-	 * @return 이미 가입된 휴대폰 번호일 경우 예외 발생
 	 */
 	private void isDuplicatePhoneNumber(String phoneNumber) {
 		if (memberRepository.existsByPhoneNumber(phoneNumber)) {
@@ -136,7 +144,8 @@ public class MemberServiceImpl implements MemberService {
 	 *  사용자 조회 (내부 로직)
 	 *
 	 * @param memberId Long
-	 * @return 사용자 객체
+	 * @return Member
+	 * @see MemberRepository
 	 */
 	private Member getMemberByIdOrElseThrowException(Long memberId) {
 		Member member = memberRepository.findById(memberId)
@@ -161,56 +170,78 @@ public class MemberServiceImpl implements MemberService {
 	/**
 	 *  신용점수 수정
 	 *
-	 * @param memberId Long
-	 *        points Integer
-	 * @return void
+	 * @param childId Long
+	 * @param groupId Long
+	 * @param points Integer
+	 * @see CreditRating
+	 * @see CreditHistoryRepository
 	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
-	public void updateCreditScore(Long memberId, Integer points) {
-		Member member = getMemberByIdOrElseThrowException(memberId);
-		Integer newCreditScore = member.getCreditScore() + points;
-
-		if (newCreditScore > CreditRating.ONE.getMaxScore()) {
-			newCreditScore = CreditRating.ONE.getMaxScore();
-		}
-		if (newCreditScore < CreditRating.TEN.getMinScore()) {
-			newCreditScore = CreditRating.TEN.getMinScore();
+	public void updateCreditScoreByPoints(Long childId, Long groupId, Integer points) {
+		if (points == 0) {
+			throw new MemberException(MemberErrorInfo.NOT_FOUND_UPDATE_CREDIT_POINTS);
 		}
 
-		member.setCreditScore(newCreditScore);
-		creditHistoryService.saveCreditHistory(member);
+		Member member = getMemberByIdOrElseThrowException(childId);
+
+		Integer currentCreditRating = CreditRating.getCreditRating(member.getCreditScore()).getRating();
+
+		if (member.getCreditScore().equals(CreditRating.ONE.getMaxScore()) && (points > 0)) {
+			throw new MemberException(MemberErrorInfo.ALREADY_MAX_CREDIT_SCORE);
+		}
+		if (member.getCreditScore().equals(CreditRating.TEN.getMinScore()) && (points < 0)) {
+			throw new MemberException(MemberErrorInfo.ALREADY_MIN_CREDIT_SCORE);
+		}
+
+		member.updateCreditScore(points);
+
+		creditHistoryRepository.save(CreditHistory.from(member));
 	}
 
 	/**
 	 *  신용점수 비율로 수정
 	 *
-	 * @param memberId Long
-	 *        rate Double
-	 * @return void
+	 * @param childId Long
+	 * @param groupId Long
+	 * @param rate Double
+	 * @see CreditRating
+	 * @see CreditHistoryRepository
 	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
-	public void updateCreditScoreByRate(Long memberId, Double rate) {
-		Member member = getMemberByIdOrElseThrowException(memberId);
+	public void updateCreditScoreByRate(Long childId, Long groupId, Double rate) {
+		if (Double.compare(rate, 0D) == 0) {
+			throw new MemberException(MemberErrorInfo.NOT_FOUND_UPDATE_CREDIT_RATE);
+		}
+
+		Member member = getMemberByIdOrElseThrowException(childId);
+
+		Integer currentCreditRating = CreditRating.getCreditRating(member.getCreditScore()).getRating();
+
+		if (member.getCreditScore().equals(CreditRating.ONE.getMaxScore()) && (Double.compare(rate, 0D) > 0)) {
+			throw new MemberException(MemberErrorInfo.ALREADY_MAX_CREDIT_SCORE);
+		}
+		if (member.getCreditScore().equals(CreditRating.TEN.getMinScore()) && (Double.compare(rate, 0D) < 0)) {
+			throw new MemberException(MemberErrorInfo.ALREADY_MIN_CREDIT_SCORE);
+		}
+
 		CreditRating creditRating = CreditRating.getCreditRating(member.getCreditScore());
+
 		Integer points = Integer.valueOf(
 			(int)Math.round((creditRating.getMaxScore() - creditRating.getMinScore()) * rate));
-		Integer newCreditScore = member.getCreditScore() + points;
 
-		if (newCreditScore > CreditRating.ONE.getMaxScore()) {
-			newCreditScore = CreditRating.ONE.getMaxScore();
-		}
-		if (newCreditScore < CreditRating.TEN.getMinScore()) {
-			newCreditScore = CreditRating.TEN.getMinScore();
-		}
-		member.setCreditScore(newCreditScore);
-		creditHistoryService.saveCreditHistory(member);
+		member.updateCreditScore(points);
+
+		creditHistoryRepository.save(CreditHistory.from(member));
 	}
 
 	/**
 	 *  신용 등급 조회
 	 *
 	 * @param memberId Long
-	 * @return 신용 등급
+	 * @param groupId Long
+	 * @return GetCreditResponseDto
 	 * @see CreditRating
 	 */
 	@Transactional(readOnly = true)
@@ -229,9 +260,9 @@ public class MemberServiceImpl implements MemberService {
 	 *  신용점수 변동 내역 조회
 	 *
 	 * @param memberId Long
-	 *        groupId Long
-	 * @return 신용점수 변동 내역 리스트
-	 * @see com.pangpang.airbank.domain.member.dto.CreditHistoryElement
+	 * @param groupId Long
+	 * @return GetCreditHistoryResponseDto
+	 * @see CreditHistoryRepository
 	 */
 	@Transactional(readOnly = true)
 	@Override
@@ -251,7 +282,8 @@ public class MemberServiceImpl implements MemberService {
 	 *  그룹에 속한 자녀 조회
 	 *
 	 * @param groupId Long
-	 * @return 자녀 정보
+	 * @return Member
+	 * @see GroupRepository
 	 */
 	private Member getChildInGroup(Long groupId) {
 		Group group = groupRepository.findById(groupId)

@@ -29,6 +29,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 사용자에 대한 Controller
+ */
 @RestController
 @RequestMapping("/members")
 @RequiredArgsConstructor
@@ -41,8 +44,8 @@ public class MemberController {
 	 *  사용자 정보 조회
 	 *
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
-	 * @return 사용자 정보
-	 * @see com.pangpang.airbank.global.resolver.AuthenticationArgumentResolver
+	 * @return ResponseEntity<EnvelopeResponse < GetMemberResponseDto>>
+	 * @see MemberService
 	 */
 	@Operation(summary = "사용자 조회", description = "로그인한 사용자의 정보를 조회합니다.")
 	@ApiResponses(value = {
@@ -66,8 +69,9 @@ public class MemberController {
 	 *  회원정보 수정
 	 *
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
-	 *        patchMemberRequestDto PatchMemberRequestDto
-	 * @return 수정된 회원 정보
+	 * @param patchMemberRequestDto PatchMemberRequestDto
+	 * @return ResponseEntity<EnvelopeResponse < PatchMemberResponseDto>>
+	 * @see MemberService
 	 */
 	@Operation(summary = "회원정보 수정", description = "로그인한 사용자의 정보를 수정합니다.")
 	@ApiResponses(value = {
@@ -94,9 +98,9 @@ public class MemberController {
 	 *  신용 등급 조회
 	 *
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
-	 *        groupId Long
-	 * @return 신용등급
-	 * @see com.pangpang.airbank.global.meta.domain.CreditRating
+	 * @param groupId Long
+	 * @return ResponseEntity<EnvelopeResponse < GetCreditResponseDto>>
+	 * @see MemberService
 	 */
 	@Operation(summary = "신용등급 조회", description = "현재 부모-자녀 관계에 포함된 자녀의 신용등급을 조회합니다.")
 	@ApiResponses(value = {
@@ -124,15 +128,18 @@ public class MemberController {
 	 *  신용점수 수정 test
 	 *
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
-	 *        points Integer
-	 * @return void
+	 * @param groupId Long
+	 * @param points Integer
+	 * @return ResponseEntity<EnvelopeResponse < Void>>
+	 * @see MemberService
 	 */
 	@PostMapping("/credit")
 	public ResponseEntity<EnvelopeResponse<Void>> updateCreditScore(
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
-		@RequestParam("rate") Double rate) {
+		@RequestParam("group_id") Long groupId,
+		@RequestParam("points") Integer points) {
 
-		memberService.updateCreditScoreByRate(authenticatedMemberArgument.getMemberId(), rate);
+		memberService.updateCreditScoreByPoints(authenticatedMemberArgument.getMemberId(), groupId, points);
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<Void>builder()
 				.code(HttpStatus.OK.value())
@@ -143,9 +150,9 @@ public class MemberController {
 	 *  신용점수 변동 내역 조회
 	 *
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
-	 *        groupId Long
-	 * @return 신용점수 변동 내역 리스트
-	 * @see com.pangpang.airbank.domain.member.dto.CreditHistoryElement
+	 * @param groupId Long
+	 * @return ResponseEntity<EnvelopeResponse < GetCreditHistoryResponseDto>>
+	 * @see MemberService
 	 */
 	@Operation(summary = "신용점수 변동내역 조회", description = "현재 부모-자녀 관계에 포함된 자녀의 신용점수 변동내역을 조회합니다.")
 	@ApiResponses(value = {

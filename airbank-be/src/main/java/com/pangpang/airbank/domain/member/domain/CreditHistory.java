@@ -1,7 +1,5 @@
 package com.pangpang.airbank.domain.member.domain;
 
-import org.hibernate.annotations.ColumnDefault;
-
 import com.pangpang.airbank.domain.BaseTimeEntity;
 
 import jakarta.persistence.Column;
@@ -38,8 +36,10 @@ public class CreditHistory extends BaseTimeEntity {
 	@JoinColumn(name = "member_id", foreignKey = @ForeignKey(name = "fk_credit_history_to_member_member_id"))
 	private Member member;
 
-	public CreditHistory(Member member) {
-		this.creditScore = member.getCreditScore();
-		this.member = member;
+	public static CreditHistory from(Member member) {
+		return CreditHistory.builder()
+			.creditScore(member.getCreditScore())
+			.member(member)
+			.build();
 	}
 }

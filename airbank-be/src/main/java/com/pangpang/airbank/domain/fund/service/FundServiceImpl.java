@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pangpang.airbank.domain.account.domain.Account;
@@ -259,6 +260,7 @@ public class FundServiceImpl implements FundService {
 	 *
 	 * @param groupId Long
 	 * @return GetConfiscationResponseDto
+	 * @see ConfiscationRepository
 	 */
 	@Transactional(readOnly = true)
 	@Override
@@ -345,5 +347,31 @@ public class FundServiceImpl implements FundService {
 		}
 
 		return PostTransferConfiscationResponseDto.of(transferResponseDto, TransactionType.CONFISCATION);
+	}
+
+	/**
+	 *  압류 시작
+	 *
+	 * @param childId Long
+	 * @param groupId Long
+	 * @return TransferResponseDto
+	 * @see FundManagementRepository
+	 * @see GroupRepository
+	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Override
+	public void confiscateLoan(Long childId, Long groupId) {
+		FundManagement fundManagement = fundManagementRepository.findByGroupId(groupId)
+			.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_FUND_MANAGEMENT_BY_GROUP));
+
+		GetInterestResponseDto getInterestResponseDto = getInterest(childId, groupId);
+
+		Group group = groupRepository.findById(groupId)
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_ID));
+
+		Long confiscationAmount = fundManagement.getLoanAmount() + getInterestResponseDto.getAmount()
+			+ getInterestResponseDto.getOverdueAmount();
+
+		confiscationRepository.save(Confiscation.of(confiscationAmount, group));
 	}
 }
