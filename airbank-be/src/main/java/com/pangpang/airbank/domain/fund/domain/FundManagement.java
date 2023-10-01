@@ -80,6 +80,11 @@ public class FundManagement {
 		this.loanAmount += loanAmount;
 	}
 
+	public void resetLoanLimitAndLoanAmount(Long loanLimit, Long loanAmount) {
+		this.loanLimit = loanLimit;
+		this.loanAmount = loanAmount;
+	}
+
 	public static FundManagement of(Group group,
 		CommonFundManagementRequestDto commonFundManagementRequestDto) {
 		return FundManagement.builder()

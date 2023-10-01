@@ -12,6 +12,7 @@ import com.pangpang.airbank.domain.account.dto.TransferResponseDto;
 import com.pangpang.airbank.domain.account.repository.AccountRepository;
 import com.pangpang.airbank.domain.account.service.TransferService;
 import com.pangpang.airbank.domain.fund.domain.Confiscation;
+import com.pangpang.airbank.domain.fund.domain.FundManagement;
 import com.pangpang.airbank.domain.fund.domain.Interest;
 import com.pangpang.airbank.domain.fund.domain.Tax;
 import com.pangpang.airbank.domain.fund.dto.GetConfiscationResponseDto;
@@ -19,22 +20,30 @@ import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusResponseDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferConfiscationRequestDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferConfiscationResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferInterestRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferTaxRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferTaxResponseDto;
 import com.pangpang.airbank.domain.fund.repository.ConfiscationRepository;
+import com.pangpang.airbank.domain.fund.repository.FundManagementRepository;
 import com.pangpang.airbank.domain.fund.repository.InterestRepository;
 import com.pangpang.airbank.domain.fund.repository.TaxRepository;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
+import com.pangpang.airbank.domain.member.domain.Member;
+import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
+import com.pangpang.airbank.global.error.exception.MemberException;
 import com.pangpang.airbank.global.error.info.AccountErrorInfo;
 import com.pangpang.airbank.global.error.info.FundErrorInfo;
 import com.pangpang.airbank.global.error.info.GroupErrorInfo;
+import com.pangpang.airbank.global.error.info.MemberErrorInfo;
 import com.pangpang.airbank.global.meta.domain.AccountType;
+import com.pangpang.airbank.global.meta.domain.MemberRole;
 import com.pangpang.airbank.global.meta.domain.TransactionType;
 
 import lombok.RequiredArgsConstructor;
@@ -48,6 +57,8 @@ public class FundServiceImpl implements FundService {
 	private final GroupRepository groupRepository;
 	private final AccountRepository accountRepository;
 	private final ConfiscationRepository confiscationRepository;
+	private final MemberRepository memberRepository;
+	private final FundManagementRepository fundManagementRepository;
 
 	/**
 	 *  현재 세금 현황 조회
@@ -256,5 +267,83 @@ public class FundServiceImpl implements FundService {
 			.orElseGet(Confiscation::new);
 
 		return GetConfiscationResponseDto.from(confiscation);
+	}
+
+	/**
+	 * 변제금 송금
+	 *
+	 * @param memberId
+	 * @param postTransferConfiscationRequestDto
+	 * @return PostTransferConfiscationResponseDto
+	 * @see MemberRepository
+	 * @see GroupRepository
+	 * @see ConfiscationRepository
+	 * @see AccountRepository
+	 * @see TransferService
+	 * @see FundManagementRepository
+	 */
+	@Transactional
+	@Override
+	public PostTransferConfiscationResponseDto transferConfiscation(Long memberId,
+		PostTransferConfiscationRequestDto postTransferConfiscationRequestDto) {
+		Member child = memberRepository.findById(memberId)
+			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
+
+		if (!child.getRole().getName().equals(MemberRole.CHILD.getName())) {
+			throw new FundException(FundErrorInfo.REPAY_CONFISCATION_PERMISSION_DENIED);
+		}
+
+		if (postTransferConfiscationRequestDto.getAmount().equals(0L)) {
+			throw new FundException(FundErrorInfo.NOT_FOUND_TRANSFER_AMOUNT);
+		}
+
+		Group group = groupRepository.findByChildIdAndActivatedTrue(memberId)
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_ID));
+
+		Confiscation confiscation = confiscationRepository.findByGroupAndActivatedTrue(group)
+			.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_CONFISCATION_BY_GROUP));
+
+		// 남은 압류금 이하의 금액인지 확인
+		Long remainAmount = confiscation.getAmount() - confiscation.getRepaidAmount();
+
+		if (remainAmount < postTransferConfiscationRequestDto.getAmount()) {
+			throw new FundException(FundErrorInfo.CONFISCATION_AMOUNT_EXCEEDED);
+		}
+
+		// 송금
+		Account senderAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.MAIN_ACCOUNT)
+			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+
+		Account receiverAccount = accountRepository.findByMemberIdAndType(group.getParent().getId(),
+			AccountType.MAIN_ACCOUNT).orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+
+		TransferResponseDto transferResponseDto = transferService.transfer(
+			TransferRequestDto.of(senderAccount, receiverAccount, postTransferConfiscationRequestDto.getAmount(),
+				TransactionType.CONFISCATION));
+
+		// 변제금 업데이트
+		confiscation.plusReapidAmount(postTransferConfiscationRequestDto.getAmount());
+
+		// 압류금 전체를 변제 했다면 압류 비활성화 + 땡겨쓰기 초기화 + 전체 이자 납부 처리
+		if (confiscation.getAmount().equals(confiscation.getRepaidAmount())) {
+			confiscation.updateActivated(false);
+
+			// 땡겨쓰기 제한 금액 및 땡겨쓴 금액 재설정
+			FundManagement fundManagement = fundManagementRepository.findByGroup(group)
+				.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_FUND_MANAGEMENT_BY_GROUP));
+
+			Long newLoanLimit = fundManagement.getLoanLimit() - fundManagement.getLoanAmount();
+
+			fundManagement.resetLoanLimitAndLoanAmount(newLoanLimit, 0L);
+
+			// 이자 납부 처리
+			List<Interest> interestList = interestRepository.findAllByGroupAndActivatedFalseAndBilledAtLessThanEqual(
+				group, LocalDate.now());
+			for (Interest interest : interestList) {
+				interest.updateActivated(true);
+			}
+		}
+
+		return PostTransferConfiscationResponseDto.of(transferResponseDto, TransactionType.CONFISCATION);
 	}
 }

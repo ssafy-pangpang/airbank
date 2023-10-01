@@ -3,6 +3,7 @@ package com.pangpang.airbank.domain.fund.domain;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.pangpang.airbank.domain.group.domain.Group;
 
@@ -41,8 +42,9 @@ public class Confiscation {
 	@Column
 	private Long repaidAmount = 0L;
 
-	@NotNull
-	@Column
+	@CreationTimestamp
+	@ColumnDefault("CURRENT_TIMESTAMP")
+	@Column(updatable = false, nullable = false)
 	private LocalDateTime startedAt;
 
 	@NotNull
@@ -56,4 +58,22 @@ public class Confiscation {
 	@JoinColumn(name = "group_id",
 		foreignKey = @ForeignKey(name = "fk_confiscation_to_group_group_id"))
 	private Group group;
+
+	/**
+	 *  상환금 갱신
+	 *
+	 * @param repaidAmount Long
+	 */
+	public void plusReapidAmount(Long repaidAmount) {
+		this.repaidAmount += repaidAmount;
+	}
+
+	/**
+	 *  activated 갱신
+	 *
+	 * @param status Boolean
+	 */
+	public void updateActivated(Boolean status) {
+		this.activated = status;
+	}
 }

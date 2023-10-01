@@ -5,6 +5,8 @@ import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.GetTaxResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferBonusResponseDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferConfiscationRequestDto;
+import com.pangpang.airbank.domain.fund.dto.PostTransferConfiscationResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferInterestRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferInterestResponseDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferTaxRequestDto;
@@ -24,4 +26,7 @@ public interface FundService {
 		Long groupId);
 
 	GetConfiscationResponseDto getConfiscation(Long groupId);
+
+	PostTransferConfiscationResponseDto transferConfiscation(Long memberId,
+		PostTransferConfiscationRequestDto postTransferConfiscationRequestDto);
 }
