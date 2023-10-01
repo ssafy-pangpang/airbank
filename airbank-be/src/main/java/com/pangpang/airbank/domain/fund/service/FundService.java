@@ -29,4 +29,6 @@ public interface FundService {
 
 	PostTransferConfiscationResponseDto transferConfiscation(Long memberId,
 		PostTransferConfiscationRequestDto postTransferConfiscationRequestDto);
+	
+	void confiscateLoan(Long childId, Long groupId);
 }

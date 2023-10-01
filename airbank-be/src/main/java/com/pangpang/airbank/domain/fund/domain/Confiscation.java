@@ -76,4 +76,11 @@ public class Confiscation {
 	public void updateActivated(Boolean status) {
 		this.activated = status;
 	}
+
+	public static Confiscation of(Long amount, Group group) {
+		return Confiscation.builder()
+			.amount(amount)
+			.group(group)
+			.build();
+	}
 }

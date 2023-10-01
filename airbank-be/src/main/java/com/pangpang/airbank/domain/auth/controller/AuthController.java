@@ -44,8 +44,8 @@ public class AuthController {
 	 *  사용자 로그인
 	 *
 	 * @param request HttpServletRequest
-	 *        postLoginRequestDto PostLoginRequestDto
-	 * @return 로그인한 사용자 이름, 휴대폰 번호
+	 * @param postLoginRequestDto PostLoginRequestDto
+	 * @return ResponseEntity<EnvelopeResponse < PostLoginResponseDto>>
 	 */
 	@Operation(summary = "사용자 로그인", description = "카카오 사용자 정보를 바탕으로 에어뱅크 서비스 로그인/회원가입을 진행합니다.")
 	@ApiResponses(value = {
@@ -76,7 +76,7 @@ public class AuthController {
 	 *  사용자 로그아웃
 	 *
 	 * @param request HttpServletRequest
-	 * @return 로그아웃한 사용자의 이름
+	 * @return ResponseEntity<EnvelopeResponse < GetLogoutResponseDto>>
 	 */
 	@Operation(summary = "사용자 로그아웃", description = "에어뱅크 서비스 로그아웃을 진행합니다.")
 	@ApiResponses(value = {

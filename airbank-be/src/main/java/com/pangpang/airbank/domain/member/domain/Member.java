@@ -7,6 +7,7 @@ import org.hibernate.annotations.Where;
 import com.pangpang.airbank.domain.BaseTimeEntity;
 import com.pangpang.airbank.domain.auth.dto.PostLoginRequestDto;
 import com.pangpang.airbank.global.meta.converter.MemberRoleConverter;
+import com.pangpang.airbank.global.meta.domain.CreditRating;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
 
 import jakarta.persistence.Column;
@@ -21,11 +22,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity(name = "member")
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -71,6 +70,50 @@ public class Member extends BaseTimeEntity {
 	@Column(length = 20)
 	@Convert(converter = MemberRoleConverter.class)
 	private MemberRole role = MemberRole.UNKNOWN;
+
+	/**
+	 * 이름 수정
+	 *
+	 * @param name String
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * 핸드폰번호 수정
+	 *
+	 * @param phoneNumber String
+	 */
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	/**
+	 * 사용자 타입 수정
+	 *
+	 * @param role String
+	 */
+	public void setRole(MemberRole role) {
+		this.role = role;
+	}
+
+	/**
+	 * 신용점수 수정
+	 *
+	 * @param points Integer
+	 */
+	public void updateCreditScore(Integer points) {
+		if (this.creditScore + points > CreditRating.ONE.getMaxScore()) {
+			this.creditScore = CreditRating.ONE.getMaxScore();
+			return;
+		}
+		if (this.creditScore + points < CreditRating.TEN.getMinScore()) {
+			this.creditScore = CreditRating.TEN.getMinScore();
+			return;
+		}
+		this.creditScore += points;
+	}
 
 	public static Member from(PostLoginRequestDto postLoginRequestDto) {
 		return Member.builder()
