@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pangpang.airbank.domain.account.domain.Account;
+import com.pangpang.airbank.domain.account.dto.SumAmountByAccount;
 import com.pangpang.airbank.domain.account.dto.TransferRequestDto;
 import com.pangpang.airbank.domain.account.dto.TransferResponseDto;
+import com.pangpang.airbank.domain.account.repository.AccountHistoryRepository;
 import com.pangpang.airbank.domain.account.repository.AccountRepository;
 import com.pangpang.airbank.domain.account.service.TransferService;
 import com.pangpang.airbank.domain.fund.domain.Confiscation;
@@ -45,6 +47,7 @@ import com.pangpang.airbank.global.error.info.GroupErrorInfo;
 import com.pangpang.airbank.global.error.info.MemberErrorInfo;
 import com.pangpang.airbank.global.meta.domain.AccountType;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
+import com.pangpang.airbank.global.meta.domain.TransactionDistinction;
 import com.pangpang.airbank.global.meta.domain.TransactionType;
 
 import lombok.RequiredArgsConstructor;
@@ -60,6 +63,7 @@ public class FundServiceImpl implements FundService {
 	private final ConfiscationRepository confiscationRepository;
 	private final MemberRepository memberRepository;
 	private final FundManagementRepository fundManagementRepository;
+	private final AccountHistoryRepository accountHistoryRepository;
 
 	/**
 	 *  현재 세금 현황 조회
@@ -130,6 +134,27 @@ public class FundServiceImpl implements FundService {
 	}
 
 	/**
+	 * 세금 부과 기능 (cron에서 사용)
+	 * @see AccountHistoryRepository
+	 */
+	@Override
+	@Transactional
+	public void createTaxes() {
+		LocalDate standDate = LocalDate.now();
+		standDate = standDate.withDayOfMonth(1);
+		standDate = standDate.minusDays(1);
+		LocalDate expiredDate = curLastDate();
+
+		List<SumAmountByAccount> taxList = accountHistoryRepository.findAmountSumByAccountAndApiCreatedAt(standDate,
+			new TransactionType[] {TransactionType.BONUS, TransactionType.MISSION},
+			new TransactionDistinction[] {TransactionDistinction.DEPOSIT});
+
+		for (SumAmountByAccount tax : taxList) {
+			saveTax(tax, expiredDate);
+		}
+	}
+
+	/**
 	 * 밀린 세금 금액
 	 *
 	 * @param groupId
@@ -153,6 +178,47 @@ public class FundServiceImpl implements FundService {
 	}
 
 	/**
+	 * 한 사용자의 세금 저장
+	 *
+	 * @param tax
+	 * @see TaxRepository
+	 * @see FundManagementRepository
+	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = RuntimeException.class)
+	public void saveTax(SumAmountByAccount tax, LocalDate expiredDate) {
+		Group group = groupRepository.findByChildIdAndActivatedTrue(tax.getMemberId())
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
+
+		// 이미 세금이 부과된 경우
+		if (curMonthTax(group.getId(), expiredDate).getAmount() != null) {
+			return;
+		}
+
+		FundManagement fundManagement = fundManagementRepository.findByGroup(group)
+			.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_FUND_MANAGEMENT_BY_GROUP));
+		Long taxAmount = Math.round(tax.getSumAmount() * (fundManagement.getTaxRate() / 100.0));
+
+		// 세금이 0인 경우
+		if (taxAmount <= 0) {
+			return;
+		}
+
+		taxRepository.save(Tax.of(taxAmount, expiredDate, group));
+	}
+
+	/**
+	 * 현재 달의 마지막 날짜
+	 * @return LocalDate
+	 */
+	public LocalDate curLastDate() {
+		LocalDate expiredDate = LocalDate.now();
+		expiredDate = expiredDate.plusMonths(1);
+		expiredDate = expiredDate.withDayOfMonth(1);
+		expiredDate = expiredDate.minusDays(1);
+		return expiredDate;
+	}
+
+	/**
 	 *  이자 조회
 	 *  1. 오늘 기준으로 이자 미납인 금액
 	 *  2. 정상 납부해야하는 금액 및 마감 날짜
@@ -167,10 +233,12 @@ public class FundServiceImpl implements FundService {
 	public GetInterestResponseDto getInterest(Long memberId, Long groupId) {
 		LocalDate endDate = LocalDate.now();
 
-		Long overdueAmount = interestRepository.findOverAmountsByGroupIdAndActivatedFalseAndExpiredAtLessThanAndBilledAtLessThanEqual(
-			groupId, endDate, endDate);
-		Interest interest = interestRepository.findFirstByGroupIdAndActivatedFalseAndExpiredAtGreaterThanEqualAndBilledAtLessThanEqual(
-			groupId, endDate, endDate).orElseGet(Interest::new);
+		Long overdueAmount =
+			interestRepository.findOverAmountsByGroupIdAndActivatedFalseAndExpiredAtLessThanAndBilledAtLessThanEqual(
+				groupId, endDate, endDate);
+		Interest interest =
+			interestRepository.findFirstByGroupIdAndActivatedFalseAndExpiredAtGreaterThanEqualAndBilledAtLessThanEqual(
+				groupId, endDate, endDate).orElseGet(Interest::new);
 
 		return GetInterestResponseDto.of(interest, overdueAmount);
 	}

@@ -17,6 +17,8 @@ public interface FundService {
 
 	PostTransferTaxResponseDto transferTax(Long memberId, PostTransferTaxRequestDto postTransferTaxRequestDto);
 
+	void createTaxes();
+
 	GetInterestResponseDto getInterest(Long memberId, Long groupId);
 
 	PostTransferInterestResponseDto transferInterest(Long memberId,
@@ -29,6 +31,6 @@ public interface FundService {
 
 	PostTransferConfiscationResponseDto transferConfiscation(Long memberId,
 		PostTransferConfiscationRequestDto postTransferConfiscationRequestDto);
-	
+
 	void confiscateLoan(Long childId, Long groupId);
 }
