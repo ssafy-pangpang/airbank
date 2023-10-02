@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pangpang.airbank.domain.loan.dto.GetLoanResponseDto;
-import com.pangpang.airbank.domain.loan.dto.PostWithdrawLoanRequestDto;
+import com.pangpang.airbank.domain.loan.dto.PostCommonLoanRequestDto;
+import com.pangpang.airbank.domain.loan.dto.PostRepaidLoanResponseDto;
 import com.pangpang.airbank.domain.loan.dto.PostWithdrawLoanResponseDto;
 import com.pangpang.airbank.domain.loan.service.LoanService;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
@@ -64,7 +65,7 @@ public class LoanController {
 	/**
 	 *  땡겨쓰기 땡기기
 	 *
-	 * @param postWithdrawLoanRequestDto PostWithdrawLoanRequestDto
+	 * @param postCommonLoanRequestDto PostWithdrawLoanRequestDto
 	 * @return ResponseEntity<EnvelopeResponse < PostWithdrawLoanResponseDto>>
 	 * @see LoanService
 	 */
@@ -82,13 +83,44 @@ public class LoanController {
 	})
 	@PostMapping()
 	public ResponseEntity<EnvelopeResponse<PostWithdrawLoanResponseDto>> withdrawLoan(
-		@RequestBody PostWithdrawLoanRequestDto postWithdrawLoanRequestDto) {
+		@RequestBody PostCommonLoanRequestDto postCommonLoanRequestDto) {
 		AuthenticatedMemberArgument member = new AuthenticatedMemberArgument(2L);
 
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<PostWithdrawLoanResponseDto>builder()
 				.code(HttpStatus.OK.value())
-				.data(loanService.withdrawLoan(member.getMemberId(), postWithdrawLoanRequestDto))
+				.data(loanService.withdrawLoan(member.getMemberId(), postCommonLoanRequestDto))
+				.build());
+	}
+
+	/**
+	 *  땡겨쓰기 중도 상환
+	 *
+	 * @param postCommonLoanRequestDto PostCommonLoanRequestDto
+	 * @return ResponseEntity<EnvelopeResponse < PostRepaidLoanResponseDto>>
+	 * @see LoanService
+	 */
+	@Operation(summary = "땡겨쓰기 중도 상환", description = "자녀 계좌에서 땡겨쓰기 가상 계좌로 입금하는 API")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "땡겨쓰기 중도 상환 성공",
+			content = @Content(schema = @Schema(implementation = PostRepaidLoanResponseDto.class))),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1303", description = "등록된 그룹이 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1403", description = "이자가 상환되지 않았습니다.", content = @Content),
+		@ApiResponse(responseCode = "1006", description = "등록된 땡겨쓰기 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1200", description = "자금 관리를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1404", description = "상환금액이 땡겨쓰기 한도를 초과했습니다.", content = @Content),
+	})
+	@PostMapping("/repaid")
+	public ResponseEntity<EnvelopeResponse<PostRepaidLoanResponseDto>> repaidLoan(
+		@RequestBody PostCommonLoanRequestDto postCommonLoanRequestDto) {
+		AuthenticatedMemberArgument member = new AuthenticatedMemberArgument(2L);
+
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<PostRepaidLoanResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(loanService.repaidLoan(member.getMemberId(), postCommonLoanRequestDto))
 				.build());
 	}
 }

@@ -5,6 +5,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class PostWithdrawLoanRequestDto {
+public class PostCommonLoanRequestDto {
 	private Long amount;
 }

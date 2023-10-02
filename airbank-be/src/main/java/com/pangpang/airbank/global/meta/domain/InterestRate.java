@@ -1,5 +1,10 @@
 package com.pangpang.airbank.global.meta.domain;
 
+import java.util.Arrays;
+
+import com.pangpang.airbank.global.error.exception.MetaException;
+import com.pangpang.airbank.global.error.info.MetaErrorInfo;
+
 import lombok.Getter;
 
 @Getter
@@ -21,5 +26,12 @@ public enum InterestRate {
 	InterestRate(Integer rating, Integer interestRate) {
 		this.rating = rating;
 		this.interestRate = interestRate;
+	}
+
+	public static InterestRate ofRating(Integer rating) {
+		return Arrays.stream(InterestRate.values())
+			.filter(value -> value.getRating().equals(rating))
+			.findAny()
+			.orElseThrow(() -> new MetaException(MetaErrorInfo.INVALID_METADATA));
 	}
 }

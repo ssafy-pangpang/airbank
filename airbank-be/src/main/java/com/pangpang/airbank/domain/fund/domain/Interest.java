@@ -7,6 +7,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import com.pangpang.airbank.domain.BaseTimeEntity;
 import com.pangpang.airbank.domain.group.domain.Group;
+import com.pangpang.airbank.global.meta.domain.InterestRate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,12 +23,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Entity(name = "interest")
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class Interest extends BaseTimeEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,5 +70,19 @@ public class Interest extends BaseTimeEntity {
 	 */
 	public void updateActivated(Boolean status) {
 		this.activated = status;
+	}
+
+	public void updateAmount(Long amount, InterestRate interestRate) {
+		Integer rate = interestRate.getInterestRate();
+		this.amount = (long)Math.floor((amount / 30.0) * (rate / 100.0));
+	}
+
+	public static Interest of(Group group) {
+		return Interest.builder()
+			.amount(0L)
+			.billedAt(LocalDate.now().plusMonths(1))
+			.expiredAt(LocalDate.now().plusMonths(1).plusWeeks(1))
+			.group(group)
+			.build();
 	}
 }
