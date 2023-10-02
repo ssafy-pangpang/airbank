@@ -85,6 +85,10 @@ public class FundManagement {
 		this.loanAmount = loanAmount;
 	}
 
+	public void minusLoanAmount(Long loanAmount) {
+		this.loanAmount -= loanAmount;
+	}
+
 	public static FundManagement of(Group group,
 		CommonFundManagementRequestDto commonFundManagementRequestDto) {
 		return FundManagement.builder()
