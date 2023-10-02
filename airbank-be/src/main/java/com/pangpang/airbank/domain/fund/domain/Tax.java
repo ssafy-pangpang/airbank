@@ -51,6 +51,14 @@ public class Tax {
 		foreignKey = @ForeignKey(name = "fk_tax_to_group_group_id"))
 	private Group group;
 
+	public static Tax of(Long taxAmount, LocalDate curLastDate, Group group) {
+		return Tax.builder()
+			.amount(taxAmount)
+			.expiredAt(curLastDate)
+			.group(group)
+			.build();
+	}
+
 	/**
 	 *  activated 갱신
 	 *

@@ -32,9 +32,9 @@ public class FundManagement {
 
 	@NotNull
 	@Builder.Default
-	@ColumnDefault("50")
+	@ColumnDefault("10")
 	@Column
-	private Integer taxRate = 50;
+	private Integer taxRate = 10;
 
 	@NotNull
 	@Column

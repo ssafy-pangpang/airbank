@@ -13,7 +13,7 @@ import com.pangpang.airbank.domain.group.domain.Group;
 public interface InterestRepository extends JpaRepository<Interest, Long> {
 	// expiredAt 기준 밀린 이자
 	@Query("""
-			SELECT sum(amount) FROM interest 
+			SELECT sum(amount) FROM interest
 			WHERE group.id=:groupId AND activated=false AND expiredAt<:expiredAt AND billedAt<=:billedAt
 		""")
 	Long findOverAmountsByGroupIdAndActivatedFalseAndExpiredAtLessThanAndBilledAtLessThanEqual(Long groupId,
