@@ -18,6 +18,7 @@ import com.pangpang.airbank.domain.savings.dto.GetCurrentSavingsResponseDto;
 import com.pangpang.airbank.domain.savings.dto.PatchCancelSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PatchCommonSavingsResponseDto;
 import com.pangpang.airbank.domain.savings.dto.PatchConfirmSavingsRequestDto;
+import com.pangpang.airbank.domain.savings.dto.PostRewardSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PostSaveSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PostTransferSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.repository.SavingsItemRepository;
@@ -164,7 +165,7 @@ public class SavingsServiceImpl implements SavingsService {
 			throw new SavingsException(SavingsErrorInfo.ALREADY_STOP_SAVINGS);
 		}
 
-		savings.cancelSavings();
+		savings.updateStatus(SavingsStatus.FAIL);
 
 		// 티끌모으기 잔액 자녀 계좌로 송금
 		Account mainAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.MAIN_ACCOUNT)
@@ -219,5 +220,59 @@ public class SavingsServiceImpl implements SavingsService {
 
 		savings.transferSavings(amount);
 		return CommonAmountResponseDto.from(response.getAmount());
+	}
+
+	/**
+	 *  티끌모으기가 완료되었을 때 부모가 승인을 하여 자녀의 계좌로 티끌모으기 금액 + 부모 지원금을 송금하는 메소드
+	 *
+	 * @param memberId Long
+	 * @param postRewardSavingsRequestDto PostRewardSavingsRequestDto
+	 * @param groupId Long
+	 * @return CommonAmountResponseDto
+	 * @see MemberRepository
+	 * @see GroupRepository
+	 * @see SavingsRepository
+	 * @see AccountRepository
+	 * @see TransferService
+	 */
+	@Transactional
+	@Override
+	public CommonAmountResponseDto rewardSavings(Long memberId, PostRewardSavingsRequestDto postRewardSavingsRequestDto,
+		Long groupId) {
+
+		if (!memberRepository.existsByIdAndRoleEquals(memberId, MemberRole.PARENT)) {
+			throw new SavingsException(SavingsErrorInfo.REWARD_SAVINGS_PERMISSION_DENIED);
+		}
+
+		Group group = groupRepository.findByIdWithChild(groupId)
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_ID));
+
+		Savings savings = savingsRepository.findByIdAndStatusEquals(postRewardSavingsRequestDto.getId(),
+				SavingsStatus.PROCEEDING)
+			.orElseThrow(() -> new SavingsException(SavingsErrorInfo.NOT_FOUND_SAVINGS_IN_PROCEEDING));
+
+		if (!savings.getTotalAmount().equals(savings.getMyAmount())) {
+			throw new SavingsException(SavingsErrorInfo.NOT_FINISHED_SAVINGS);
+		}
+
+		Account parentAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.MAIN_ACCOUNT)
+			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+
+		Account savingsAccount = accountRepository.findByMemberAndType(group.getChild(), AccountType.SAVINGS_ACCOUNT)
+			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_SAVINGS_ACCOUNT));
+
+		Account childAccount = accountRepository.findByMemberAndType(group.getChild(), AccountType.MAIN_ACCOUNT)
+			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+
+		// 1. 부모 계좌에서 지원금 만큼 자녀 계좌로 송금
+		TransferResponseDto response1 = transferService.transfer(TransferRequestDto.of(parentAccount, childAccount,
+			savings.getParentsAmount(), TransactionType.SAVINGS));
+
+		// 2. 티끌모으기 계좌에서 모은 금액 자녀 계좌로 송금
+		TransferResponseDto response2 = transferService.transfer(TransferRequestDto.of(savingsAccount, childAccount,
+			savings.getTotalAmount(), TransactionType.SAVINGS));
+
+		savings.updateStatus(SavingsStatus.SUCCESS);
+		return CommonAmountResponseDto.from(response1.getAmount() + response2.getAmount());
 	}
 }

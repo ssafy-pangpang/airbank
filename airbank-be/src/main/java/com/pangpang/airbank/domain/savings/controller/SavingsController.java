@@ -14,12 +14,14 @@ import com.pangpang.airbank.domain.savings.dto.GetCurrentSavingsResponseDto;
 import com.pangpang.airbank.domain.savings.dto.PatchCancelSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PatchCommonSavingsResponseDto;
 import com.pangpang.airbank.domain.savings.dto.PatchConfirmSavingsRequestDto;
+import com.pangpang.airbank.domain.savings.dto.PostRewardSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PostSaveSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PostTransferSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.service.SavingsService;
 import com.pangpang.airbank.global.common.response.CommonAmountResponseDto;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
+import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,6 +45,7 @@ public class SavingsController {
 	/**
 	 *  티끌모으기 현재 내역 조회
 	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 * @param groupId Long
 	 * @return ResponseEntity<EnvelopeResponse < GetCurrentSavingsResponseDto>>
 	 * @see SavingsService
@@ -59,8 +62,8 @@ public class SavingsController {
 	// @CheckGroup
 	@GetMapping("/current")
 	public ResponseEntity<EnvelopeResponse<GetCurrentSavingsResponseDto>> getCurrentSavings(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestParam("group_id") Long groupId) {
-		AuthenticatedMemberArgument member = new AuthenticatedMemberArgument(2L);
 
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<GetCurrentSavingsResponseDto>builder()
@@ -72,6 +75,7 @@ public class SavingsController {
 	/**
 	 *  티끌모으기 생성
 	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 * @param postSaveSavingsRequestDto PostSaveSavingsRequestDto
 	 * @return ResponseEntity<EnvelopeResponse < CommonIdResponseDto>>
 	 * @see SavingsService
@@ -88,19 +92,20 @@ public class SavingsController {
 	})
 	@PostMapping("/item")
 	public ResponseEntity<EnvelopeResponse<CommonIdResponseDto>> saveSavings(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PostSaveSavingsRequestDto postSaveSavingsRequestDto) {
-		AuthenticatedMemberArgument member = new AuthenticatedMemberArgument(2L);
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(EnvelopeResponse.<CommonIdResponseDto>builder()
 				.code(HttpStatus.CREATED.value())
-				.data(savingsService.saveSavings(member.getMemberId(), postSaveSavingsRequestDto))
+				.data(savingsService.saveSavings(authenticatedMemberArgument.getMemberId(), postSaveSavingsRequestDto))
 				.build());
 	}
 
 	/**
 	 *  티끌모으기 요청 수락/거절
 	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 * @param patchConfirmSavingsRequestDto PatchConfirmSavingsRequestDto
 	 * @param groupId Long
 	 * @return ResponseEntity<EnvelopeResponse < PatchConfirmSavingsResponseDto>>
@@ -117,14 +122,15 @@ public class SavingsController {
 	})
 	@PatchMapping("/confirm")
 	public ResponseEntity<EnvelopeResponse<PatchCommonSavingsResponseDto>> confirmEnrollmentSavings(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PatchConfirmSavingsRequestDto patchConfirmSavingsRequestDto,
 		@RequestParam("group_id") Long groupId) {
-		AuthenticatedMemberArgument member = new AuthenticatedMemberArgument(1L);
 
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<PatchCommonSavingsResponseDto>builder()
 				.code(HttpStatus.OK.value())
-				.data(savingsService.confirmEnrollmentSavings(member.getMemberId(), patchConfirmSavingsRequestDto,
+				.data(savingsService.confirmEnrollmentSavings(authenticatedMemberArgument.getMemberId(),
+					patchConfirmSavingsRequestDto,
 					groupId))
 				.build());
 	}
@@ -132,13 +138,14 @@ public class SavingsController {
 	/**
 	 *  티끌모으기 포기
 	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 * @param patchCancelSavingsRequestDto PatchCancelSavingsRequestDto
 	 * @return ResponseEntity<EnvelopeResponse < PatchCommonSavingsResponseDto>>
 	 * @see SavingsService
 	 */
 	@Operation(summary = "티끌모으기 포기", description = "진행중인 티끌모으기를 포기하는 API, 자녀만 가능")
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "티끌모으기 요청 수락/거절 성공",
+		@ApiResponse(responseCode = "200", description = "티끌모으기 포기 성공",
 			content = @Content(schema = @Schema(implementation = PatchCommonSavingsResponseDto.class))),
 		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
 		@ApiResponse(responseCode = "1807", description = "티끌모으기 포기는 자녀만 가능합니다.", content = @Content),
@@ -149,26 +156,28 @@ public class SavingsController {
 	})
 	@PatchMapping("/cancel")
 	public ResponseEntity<EnvelopeResponse<PatchCommonSavingsResponseDto>> cancelSavings(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PatchCancelSavingsRequestDto patchCancelSavingsRequestDto) {
-		AuthenticatedMemberArgument member = new AuthenticatedMemberArgument(2L);
 
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<PatchCommonSavingsResponseDto>builder()
 				.code(HttpStatus.OK.value())
-				.data(savingsService.cancelSavings(member.getMemberId(), patchCancelSavingsRequestDto))
+				.data(savingsService.cancelSavings(authenticatedMemberArgument.getMemberId(),
+					patchCancelSavingsRequestDto))
 				.build());
 	}
 
 	/**
 	 *  티끌모으기 송금
 	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 * @param postTransferSavingsRequestDto PostTransferSavingsRequestDto
 	 * @return ResponseEntity<EnvelopeResponse < CommonAmountResponseDto>>
 	 * @see SavingsService
 	 */
 	@Operation(summary = "티끌모으기 송금", description = "자녀 계좌에서 티끌모으기 가상 계좌로 송금하는 API")
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "티끌모으기 요청 수락/거절 성공",
+		@ApiResponse(responseCode = "200", description = "티끌모으기 송금 성공",
 			content = @Content(schema = @Schema(implementation = CommonAmountResponseDto.class))),
 		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
 		@ApiResponse(responseCode = "1809", description = "티끌모으기 송금은 자녀만 가능합니다.", content = @Content),
@@ -179,13 +188,49 @@ public class SavingsController {
 	})
 	@PostMapping()
 	public ResponseEntity<EnvelopeResponse<CommonAmountResponseDto>> transferSavings(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PostTransferSavingsRequestDto postTransferSavingsRequestDto) {
-		AuthenticatedMemberArgument member = new AuthenticatedMemberArgument(2L);
 
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<CommonAmountResponseDto>builder()
 				.code(HttpStatus.OK.value())
-				.data(savingsService.transferSavings(member.getMemberId(), postTransferSavingsRequestDto))
+				.data(savingsService.transferSavings(authenticatedMemberArgument.getMemberId(),
+					postTransferSavingsRequestDto))
+				.build());
+	}
+
+	/**
+	 *  티끌모으기 지원금 송금
+	 *
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 * @param postRewardSavingsRequestDto PostRewardSavingsRequestDto
+	 * @param groupId Long
+	 * @return ResponseEntity<EnvelopeResponse < CommonAmountResponseDto>>
+	 * @see SavingsService
+	 */
+	@Operation(summary = "티끌모으기 지원금 송금", description = "티끌모으기가 완료되었을 때 부모가 승인을 하여 자녀의 계좌로 티끌모으기 금액 + 부모 지원금을 송금하는 API")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "티끌모으기 지원금 송금 성공",
+			content = @Content(schema = @Schema(implementation = CommonAmountResponseDto.class))),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1811", description = "티끌모으기 지원금 송금은 부모만 가능합니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1800", description = "진행중인 티끌모으기를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1812", description = "티끌모으기가 아직 완료되지 않았습니다.", content = @Content),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1008", description = "등록된 티끌모으기 계좌가 없습니다.", content = @Content),
+	})
+	@PostMapping("/reward")
+	public ResponseEntity<EnvelopeResponse<CommonAmountResponseDto>> rewardSavings(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestBody PostRewardSavingsRequestDto postRewardSavingsRequestDto, @RequestParam("group_id") Long groupId) {
+
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<CommonAmountResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(
+					savingsService.rewardSavings(authenticatedMemberArgument.getMemberId(), postRewardSavingsRequestDto,
+						groupId))
 				.build());
 	}
 }

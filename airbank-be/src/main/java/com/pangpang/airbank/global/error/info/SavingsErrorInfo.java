@@ -16,7 +16,9 @@ public enum SavingsErrorInfo {
 	CANCEL_SAVINGS_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 1807, "티끌모으기 포기는 자녀만 가능합니다."),
 	ALREADY_STOP_SAVINGS(HttpStatus.FORBIDDEN, 1808, "이미 종료된 티끌모으기 입니다."),
 	TRANSFER_SAVINGS_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 1809, "티끌모으기 송금은 자녀만 가능합니다."),
-	ALREADY_TRANSFER_SAVINGS_THIS_MONTH(HttpStatus.FORBIDDEN, 1810, "이번달에는 이미 티끌모으기 송금을 완료했습니다.");
+	ALREADY_TRANSFER_SAVINGS_THIS_MONTH(HttpStatus.FORBIDDEN, 1810, "이번달에는 이미 티끌모으기 송금을 완료했습니다."),
+	REWARD_SAVINGS_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 1811, "티끌모으기 지원금 송금은 부모만 가능합니다."),
+	NOT_FINISHED_SAVINGS(HttpStatus.FORBIDDEN, 1812, "티끌모으기가 아직 완료되지 않았습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;
