@@ -15,7 +15,8 @@ public enum TransactionType {
 	ALLOWANCE(4, "ALLOWANCE"),
 	MISSION(5, "MISSION"),
 	CONFISCATION(6, "CONFISCATION"),
-	LOAN(7, "LOAN");
+	LOAN(7, "LOAN"),
+	SAVINGS(8, "SAVINGS");
 
 	private final Integer id;
 	private final String name;

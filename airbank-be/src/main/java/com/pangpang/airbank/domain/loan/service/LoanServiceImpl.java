@@ -22,9 +22,9 @@ import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.loan.dto.GetLoanResponseDto;
 import com.pangpang.airbank.domain.loan.dto.PostCommonLoanRequestDto;
 import com.pangpang.airbank.domain.loan.dto.PostRepaidLoanResponseDto;
-import com.pangpang.airbank.domain.loan.dto.PostWithdrawLoanResponseDto;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
+import com.pangpang.airbank.global.common.response.CommonAmountResponseDto;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
@@ -76,8 +76,8 @@ public class LoanServiceImpl implements LoanService {
 	 *  땡겨쓰기 가상계좌에서 자녀 계좌로 입금하는 메소드
 	 *
 	 * @param memberId Long
-	 * @param postCommonLoanRequestDto PostWithdrawLoanRequestDto
-	 * @return PostWithdrawLoanResponseDto
+	 * @param postCommonLoanRequestDto PostCommonLoanRequestDto
+	 * @return CommonAmountResponseDto
 	 * @see MemberRepository
 	 * @see LoanConstantProvider
 	 * @see AccountRepository
@@ -89,7 +89,7 @@ public class LoanServiceImpl implements LoanService {
 	 */
 	@Transactional
 	@Override
-	public PostWithdrawLoanResponseDto withdrawLoan(Long memberId,
+	public CommonAmountResponseDto withdrawLoan(Long memberId,
 		PostCommonLoanRequestDto postCommonLoanRequestDto) {
 		Member child = memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
@@ -134,7 +134,7 @@ public class LoanServiceImpl implements LoanService {
 		TransferResponseDto response = transferService.transfer(transferRequestDto);
 		fundManagement.plusLoanAmount(response.getAmount());
 
-		return PostWithdrawLoanResponseDto.from(response.getAmount());
+		return CommonAmountResponseDto.from(response.getAmount());
 	}
 
 	/**

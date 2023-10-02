@@ -14,7 +14,9 @@ public enum SavingsErrorInfo {
 	NOT_FOUND_SAVINGS_IN_PENDING(HttpStatus.NOT_FOUND, 1805, "등록 대기중인 티끌모으기를 찾을 수 없습니다."),
 	ALREADY_SAVINGS_IN_PENDING(HttpStatus.FORBIDDEN, 1806, "이미 등록 대기중인 티끌모으기가 존재합니다."),
 	CANCEL_SAVINGS_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 1807, "티끌모으기 포기는 자녀만 가능합니다."),
-	ALREADY_EXIT_SAVINGS(HttpStatus.FORBIDDEN, 1808, "이미 종료된 티끌모으기 입니다.");
+	ALREADY_STOP_SAVINGS(HttpStatus.FORBIDDEN, 1808, "이미 종료된 티끌모으기 입니다."),
+	TRANSFER_SAVINGS_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 1809, "티끌모으기 송금은 자녀만 가능합니다."),
+	ALREADY_TRANSFER_SAVINGS_THIS_MONTH(HttpStatus.FORBIDDEN, 1810, "이번달에는 이미 티끌모으기 송금을 완료했습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;

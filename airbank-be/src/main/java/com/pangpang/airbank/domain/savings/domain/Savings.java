@@ -55,11 +55,9 @@ public class Savings extends BaseTimeEntity {
 	@Column
 	private Long totalAmount = 0L;
 
-	@NotNull
 	@Column
 	private LocalDate startedAt;
 
-	@NotNull
 	@Column
 	private LocalDate expiredAt;
 
@@ -75,6 +73,12 @@ public class Savings extends BaseTimeEntity {
 	@ColumnDefault("0")
 	@Column
 	private Integer paymentCount = 0;
+
+	@NotNull
+	@Builder.Default
+	@ColumnDefault("0")
+	@Column
+	private Integer delayCount = 0;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -100,7 +104,6 @@ public class Savings extends BaseTimeEntity {
 			.monthlyAmount((amount - parentsAmount) / month)
 			.startedAt(LocalDate.now())
 			.expiredAt(LocalDate.now().plusMonths(month))
-			.endedAt(LocalDate.now().plusMonths(month))
 			.month(month)
 			.group(group)
 			.build();
@@ -108,13 +111,39 @@ public class Savings extends BaseTimeEntity {
 
 	public void confirmSavings(PatchConfirmSavingsRequestDto patchConfirmSavingsRequestDto) {
 		if (patchConfirmSavingsRequestDto.getIsAccept()) {
+			LocalDate now = LocalDate.now();
+
 			this.status = SavingsStatus.PROCEEDING;
+			this.startedAt = now;
+			this.expiredAt = now.plusMonths(this.month);
 			return;
 		}
 		this.status = SavingsStatus.REJECT;
 	}
 
+	public Long getAmountThisMonth() {
+		if (this.getMonth() - this.getPaymentCount() == 1) {
+			return this.getMyAmount() - this.getTotalAmount();
+		}
+		return this.getMonthlyAmount();
+	}
+
 	public void cancelSavings() {
 		this.status = SavingsStatus.FAIL;
+	}
+
+	public Boolean isPaidThisMonth() {
+		LocalDate startDate = this.startedAt.plusMonths(this.paymentCount + this.delayCount);
+		LocalDate endDate = startDate.plusMonths(1);
+		LocalDate now = LocalDate.now();
+		return (!startDate.isBefore(now) && !startDate.equals(now)) || (!endDate.isAfter(now) && !endDate.equals(now));
+	}
+
+	public void transferSavings(Long amount) {
+		if (this.getMonth() - this.getPaymentCount() == 1) {
+			this.endedAt = LocalDate.now();
+		}
+		this.totalAmount += amount;
+		this.paymentCount++;
 	}
 }
