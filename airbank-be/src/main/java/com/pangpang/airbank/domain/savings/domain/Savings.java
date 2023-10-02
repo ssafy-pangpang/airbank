@@ -128,8 +128,8 @@ public class Savings extends BaseTimeEntity {
 		return this.getMonthlyAmount();
 	}
 
-	public void cancelSavings() {
-		this.status = SavingsStatus.FAIL;
+	public void updateStatus(SavingsStatus status) {
+		this.status = status;
 	}
 
 	public Boolean isPaidThisMonth() {
