@@ -64,14 +64,16 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@Transactional
 	public void saveVirtualAccount(Long memberId, AccountType type) {
-		Account account = accountRepository.findFirstByMemberIsNullAndType(type)
+		Account account = accountRepository.findFirstByMemberIsNullOrMemberIdAndType(memberId, type)
 			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_AVAILABLE_ACCOUNT));
 
 		PostEnrollAccountRequestDto postEnrollAccountRequestDto = PostEnrollAccountRequestDto.fromVirtualAccount(
 			account.getAccountNumber());
 
-		saveFinAccount(account, postEnrollAccountRequestDto);
-		account.addMember(memberRepository.getReferenceById(memberId));
+		if (account.getFinAccountNumber() == null) {
+			saveFinAccount(account, postEnrollAccountRequestDto);
+			account.addMember(memberRepository.getReferenceById(memberId));
+		}
 	}
 
 	/**

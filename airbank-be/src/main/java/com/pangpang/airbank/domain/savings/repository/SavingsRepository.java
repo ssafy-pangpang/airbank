@@ -16,4 +16,6 @@ public interface SavingsRepository extends JpaRepository<Savings, Long> {
 	Boolean existsByStatusEquals(SavingsStatus status);
 
 	Boolean existsByGroupIdAndStatusEquals(Long id, SavingsStatus status);
+
+	Optional<Savings> findByIdAndStatusEquals(Long id, SavingsStatus savingsStatus);
 }

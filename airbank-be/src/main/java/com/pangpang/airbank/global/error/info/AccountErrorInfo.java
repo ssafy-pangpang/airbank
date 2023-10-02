@@ -13,7 +13,8 @@ public enum AccountErrorInfo {
 	NOT_FOUND_ACCOUNT(HttpStatus.NOT_FOUND, 1004, "등록된 계좌가 없습니다."),
 	NOT_FOUND_AVAILABLE_ACCOUNT(HttpStatus.NOT_FOUND, 1005, "사용가능한 계좌가 없습니다."),
 	NOT_FOUND_LOAN_ACCOUNT(HttpStatus.NOT_FOUND, 1006, "등록된 땡겨쓰기 계좌가 없습니다."),
-	ACCOUNT_AMOUNT_SERVER_ERROR(HttpStatus.NOT_FOUND, 1007, "계좌의 잔액을 불러올 수 없습니다.");
+	ACCOUNT_AMOUNT_SERVER_ERROR(HttpStatus.NOT_FOUND, 1007, "계좌의 잔액을 불러올 수 없습니다."),
+	NOT_FOUND_SAVINGS_ACCOUNT(HttpStatus.NOT_FOUND, 1008, "등록된 티끌모으기 계좌가 없습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;

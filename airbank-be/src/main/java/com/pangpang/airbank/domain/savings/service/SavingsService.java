@@ -5,6 +5,8 @@ import com.pangpang.airbank.domain.savings.dto.PatchCancelSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PatchCommonSavingsResponseDto;
 import com.pangpang.airbank.domain.savings.dto.PatchConfirmSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PostSaveSavingsRequestDto;
+import com.pangpang.airbank.domain.savings.dto.PostTransferSavingsRequestDto;
+import com.pangpang.airbank.global.common.response.CommonAmountResponseDto;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 
 public interface SavingsService {
@@ -18,4 +20,6 @@ public interface SavingsService {
 
 	PatchCommonSavingsResponseDto cancelSavings(Long memberId,
 		PatchCancelSavingsRequestDto patchCancelSavingsRequestDto);
+
+	CommonAmountResponseDto transferSavings(Long memberId, PostTransferSavingsRequestDto postTransferSavingsRequestDto);
 }

@@ -15,7 +15,9 @@ import com.pangpang.airbank.domain.savings.dto.PatchCancelSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PatchCommonSavingsResponseDto;
 import com.pangpang.airbank.domain.savings.dto.PatchConfirmSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.dto.PostSaveSavingsRequestDto;
+import com.pangpang.airbank.domain.savings.dto.PostTransferSavingsRequestDto;
 import com.pangpang.airbank.domain.savings.service.SavingsService;
+import com.pangpang.airbank.global.common.response.CommonAmountResponseDto;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
@@ -141,7 +143,9 @@ public class SavingsController {
 		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
 		@ApiResponse(responseCode = "1807", description = "티끌모으기 포기는 자녀만 가능합니다.", content = @Content),
 		@ApiResponse(responseCode = "1800", description = "진행중인 티끌모으기를 찾을 수 없습니다.", content = @Content),
-		@ApiResponse(responseCode = "1808", description = "이미 종료된 티끌모으기 입니다.", content = @Content)
+		@ApiResponse(responseCode = "1808", description = "이미 종료된 티끌모으기 입니다.", content = @Content),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1008", description = "등록된 티끌모으기 계좌가 없습니다.", content = @Content),
 	})
 	@PatchMapping("/cancel")
 	public ResponseEntity<EnvelopeResponse<PatchCommonSavingsResponseDto>> cancelSavings(
@@ -152,6 +156,36 @@ public class SavingsController {
 			.body(EnvelopeResponse.<PatchCommonSavingsResponseDto>builder()
 				.code(HttpStatus.OK.value())
 				.data(savingsService.cancelSavings(member.getMemberId(), patchCancelSavingsRequestDto))
+				.build());
+	}
+
+	/**
+	 *  티끌모으기 송금
+	 *
+	 * @param postTransferSavingsRequestDto PostTransferSavingsRequestDto
+	 * @return ResponseEntity<EnvelopeResponse < CommonAmountResponseDto>>
+	 * @see SavingsService
+	 */
+	@Operation(summary = "티끌모으기 송금", description = "자녀 계좌에서 티끌모으기 가상 계좌로 송금하는 API")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "티끌모으기 요청 수락/거절 성공",
+			content = @Content(schema = @Schema(implementation = CommonAmountResponseDto.class))),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1809", description = "티끌모으기 송금은 자녀만 가능합니다.", content = @Content),
+		@ApiResponse(responseCode = "1800", description = "진행중인 티끌모으기를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1008", description = "등록된 티끌모으기 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1810", description = "이번달에는 이미 티끌모으기 송금을 완료했습니다.", content = @Content),
+	})
+	@PostMapping()
+	public ResponseEntity<EnvelopeResponse<CommonAmountResponseDto>> transferSavings(
+		@RequestBody PostTransferSavingsRequestDto postTransferSavingsRequestDto) {
+		AuthenticatedMemberArgument member = new AuthenticatedMemberArgument(2L);
+
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<CommonAmountResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(savingsService.transferSavings(member.getMemberId(), postTransferSavingsRequestDto))
 				.build());
 	}
 }
