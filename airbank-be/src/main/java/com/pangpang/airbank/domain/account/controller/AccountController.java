@@ -6,10 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pangpang.airbank.domain.account.dto.GetAccountAmountResponseDto;
+import com.pangpang.airbank.domain.account.dto.GetAccountHistoryResponseDto;
 import com.pangpang.airbank.domain.account.dto.PostEnrollAccountRequestDto;
+import com.pangpang.airbank.domain.account.service.AccountHistoryService;
 import com.pangpang.airbank.domain.account.service.AccountService;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
@@ -36,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AccountController {
 
 	private final AccountService accountService;
+	private final AccountHistoryService accountHistoryService;
 
 	/**
 	 *  사용자가 계좌 등록할 때 처리
@@ -89,6 +93,27 @@ public class AccountController {
 				.code(HttpStatus.OK.value())
 				.data(
 					accountService.getAccountAmount(authenticatedMemberArgument.getMemberId())
+				)
+				.build());
+	}
+
+	/**
+	 * 거래 내역 조회
+	 *
+	 * @param authenticatedMemberArgument
+	 * @param accountType
+	 * @return ResponseEntity<EnvelopeResponse<GetAccountHistoryResponseDto>>
+	 */
+	@GetMapping("/history")
+	public ResponseEntity<EnvelopeResponse<GetAccountHistoryResponseDto>> inquireAccountHistory(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestParam("account_type") String accountType
+	) {
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<GetAccountHistoryResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(
+					accountHistoryService.inquireAccountHistory(authenticatedMemberArgument.getMemberId(), accountType)
 				)
 				.build());
 	}
