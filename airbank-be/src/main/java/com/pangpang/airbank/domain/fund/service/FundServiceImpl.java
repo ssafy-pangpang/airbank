@@ -51,9 +51,11 @@ import com.pangpang.airbank.global.meta.domain.TransactionDistinction;
 import com.pangpang.airbank.global.meta.domain.TransactionType;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FundServiceImpl implements FundService {
 	private final TransferService transferService;
 	private final TaxRepository taxRepository;
@@ -442,4 +444,44 @@ public class FundServiceImpl implements FundService {
 
 		confiscationRepository.save(Confiscation.of(confiscationAmount, group));
 	}
+
+	/**
+	 *  부모 계좌에서 자녀 계좌로 용돈을 자동이체 하는 메소드, Cron
+	 *
+	 * @see FundManagementRepository
+	 * @see AccountRepository
+	 * @see TransferService
+	 */
+	@Transactional
+	@Override
+	public void transferAllowanceByCron() {
+		// TODO: 매일 오전 00시에 CRON 동작
+		List<FundManagement> fundManagements = fundManagementRepository.findAll();
+		Integer nowDay = LocalDate.now().getDayOfMonth();
+		for (FundManagement fundManagement : fundManagements) {
+			if (!fundManagement.getAllowanceDate().equals(nowDay)) {
+				continue;
+			}
+
+			Group group = fundManagement.getGroup();
+			Member parent = group.getParent();
+			Member child = group.getChild();
+
+			try {
+				Account parentAccount = accountRepository.findByMemberAndType(parent, AccountType.MAIN_ACCOUNT)
+					.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+
+				Account childAccount = accountRepository.findByMemberAndType(child, AccountType.MAIN_ACCOUNT)
+					.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+
+				TransferResponseDto response = transferService.transfer(
+					TransferRequestDto.of(parentAccount, childAccount, fundManagement.getAllowanceAmount(),
+						TransactionType.ALLOWANCE));
+				log.info(group.getId() + " 그룹 용돈 자동이체 SUCCESS / 이체 금액 : " + response.getAmount());
+			} catch (RuntimeException e) {
+				log.info(group.getId() + " 그룹 용돈 자동이체 FAIL");
+			}
+		}
+	}
+
 }
