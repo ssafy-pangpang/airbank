@@ -74,7 +74,7 @@ public class Interest extends BaseTimeEntity {
 
 	public void updateAmount(Long amount, InterestRate interestRate) {
 		Integer rate = interestRate.getInterestRate();
-		this.amount = (long)Math.floor((amount / 30.0) * (rate / 100.0));
+		this.amount = (long)Math.floor(amount * (rate / 100.0));
 	}
 
 	public static Interest of(Group group) {

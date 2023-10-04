@@ -39,6 +39,8 @@ import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.domain.member.service.MemberService;
+import com.pangpang.airbank.domain.notification.dto.CreateNotificationDto;
+import com.pangpang.airbank.domain.notification.service.NotificationService;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
@@ -50,6 +52,7 @@ import com.pangpang.airbank.global.error.info.MemberErrorInfo;
 import com.pangpang.airbank.global.meta.domain.AccountType;
 import com.pangpang.airbank.global.meta.domain.CreditRating;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
+import com.pangpang.airbank.global.meta.domain.NotificationType;
 import com.pangpang.airbank.global.meta.domain.TaxRefund;
 import com.pangpang.airbank.global.meta.domain.TransactionDistinction;
 import com.pangpang.airbank.global.meta.domain.TransactionType;
@@ -72,6 +75,7 @@ public class FundServiceImpl implements FundService {
 	private final AccountHistoryRepository accountHistoryRepository;
 	private final MemberService memberService;
 	private final ConfiscationConstantProvider confiscationConstantProvider;
+	private final NotificationService notificationService;
 
 	/**
 	 *  현재 세금 현황 조회
@@ -627,9 +631,11 @@ public class FundServiceImpl implements FundService {
 
 			try {
 				confiscateLoan(child.getId(), group.getId());
-				log.info(group.getId() + " 자동 압류 SUCCESS");
+				notificationService.saveNotification(
+					CreateNotificationDto.of("땡겨쓰기 잔액이 압류되었습니다.", child, NotificationType.CONFISCATION));
+				log.info(group.getId() + "자동 압류 SUCCESS");
 			} catch (RuntimeException e) {
-				log.info(group.getId() + " 자동 압류 FAIL");
+				log.info(group.getId() + "자동 압류 FAIL");
 			}
 		}
 	}

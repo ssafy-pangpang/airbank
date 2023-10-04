@@ -11,4 +11,6 @@ public interface LoanService {
 	PostRepaidLoanResponseDto repaidLoan(Long memberId, PostCommonLoanRequestDto postCommonLoanRequestDto);
 
 	CommonAmountResponseDto withdrawLoan(Long memberId, PostCommonLoanRequestDto postCommonLoanRequestDto);
+
+	void createInterestByCron();
 }

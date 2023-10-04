@@ -27,4 +27,6 @@ public interface InterestRepository extends JpaRepository<Interest, Long> {
 	List<Interest> findAllByGroupAndActivatedFalseAndBilledAtLessThanEqual(Group group, LocalDate billedAt);
 
 	Optional<Interest> findByGroupAndActivatedFalseAndBilledAtGreaterThan(Group group, LocalDate billedAt);
+
+	List<Interest> findAllByBilledAtAndActivatedFalse(LocalDate billedAt);
 }
