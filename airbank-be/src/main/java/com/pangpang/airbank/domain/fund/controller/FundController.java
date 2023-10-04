@@ -268,4 +268,18 @@ public class FundController {
 				.code(HttpStatus.OK.value())
 				.build());
 	}
+
+	/**
+	 *  용돈 자동이체 cron
+	 *
+	 * @see FundService
+	 */
+	@GetMapping("/allowance-cron")
+	public ResponseEntity<EnvelopeResponse<Void>> transferAllowance() {
+		fundService.transferAllowanceByCron();
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<Void>builder()
+				.code(HttpStatus.OK.value())
+				.build());
+	}
 }
