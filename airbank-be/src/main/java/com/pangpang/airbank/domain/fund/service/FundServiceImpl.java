@@ -670,4 +670,42 @@ public class FundServiceImpl implements FundService {
 		}
 	}
 
+	/**
+	 *  이자 미납 여부를 확인하는 메서드, Cron
+	 *
+	 * @see InterestRepository
+	 * @see ConfiscationRepository
+	 */
+	@Transactional
+	@Override
+	public void checkNoPaymentInterests() {
+		// TODO: 매일 오전 00시에 CRON 동작
+		LocalDate yesterday = LocalDate.now().minusDays(1);
+		List<Interest> interests = interestRepository.findAllByExpiredAtAndActivatedTrue(yesterday);
+		for (Interest interest : interests) {
+			// 현재 압류 중인지 확인
+			if (confiscationRepository.existsByGroupIdAndActivatedTrue(interest.getGroup().getId())) {
+				continue;
+			}
+
+			createWarningInterest(interest);
+		}
+	}
+
+	/**
+	 * 미납 이자 주인의 신용점수 하락 및 알림 발송
+	 * @param interest
+	 * @see MemberService
+	 * @see NotificationService
+	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = RuntimeException.class)
+	public void createWarningInterest(Interest interest) {
+		// 신용 점수 하락
+		memberService.updateCreditScoreByRate(interest.getGroup().getChild().getId(), -0.5);
+
+		// 이자 미납 알림
+		notificationService.saveNotification(
+			CreateNotificationDto.of("지난 달 이자 미납으로 신용점수가 하락했습니다.", interest.getGroup().getChild(),
+				NotificationType.INTEREST));
+	}
 }
