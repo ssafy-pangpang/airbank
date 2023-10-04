@@ -26,4 +26,6 @@ public interface SavingsService {
 
 	CommonAmountResponseDto rewardSavings(Long memberId, PostRewardSavingsRequestDto postRewardSavingsRequestDto,
 		Long groupId);
+
+	void confirmDelaySavings();
 }
