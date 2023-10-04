@@ -37,6 +37,7 @@ import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
+import com.pangpang.airbank.domain.member.service.MemberService;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
@@ -66,6 +67,7 @@ public class FundServiceImpl implements FundService {
 	private final MemberRepository memberRepository;
 	private final FundManagementRepository fundManagementRepository;
 	private final AccountHistoryRepository accountHistoryRepository;
+	private final MemberService memberService;
 
 	/**
 	 *  현재 세금 현황 조회
@@ -290,6 +292,13 @@ public class FundServiceImpl implements FundService {
 		// 이자 납부 처리
 		for (Interest interest : interestList) {
 			interest.updateActivated(true);
+		}
+
+		// 신용 점수 증가
+		try {
+			memberService.updateCreditScoreByRate(memberId, 0.1);
+		} catch (MemberException e) {
+			log.info(e.getMessage());
 		}
 
 		return PostTransferInterestResponseDto.of(transferResponseDto, TransactionType.INTEREST);

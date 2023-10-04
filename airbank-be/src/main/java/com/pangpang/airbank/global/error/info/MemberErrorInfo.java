@@ -10,9 +10,7 @@ public enum MemberErrorInfo {
 	NOT_FOUND_CHILD_MEMBER_BY_PHONE_NUMBER(HttpStatus.NOT_FOUND, 1501, "등록된 휴대폰 번호가 없습니다."),
 	DUPLICATE_PHONENUMBER(HttpStatus.BAD_REQUEST, 1502, "이미 가입된 휴대폰 번호입니다."),
 	NOT_FOUND_UPDATE_CREDIT_POINTS(HttpStatus.BAD_REQUEST, 1503, "수정될 신용점수가 입력되지 않았습니다."),
-	NOT_FOUND_UPDATE_CREDIT_RATE(HttpStatus.BAD_REQUEST, 1504, "수정될 신용비율이 입력되지 않았습니다."),
-	ALREADY_MAX_CREDIT_SCORE(HttpStatus.BAD_REQUEST, 1505, "신용점수가 더 이상 오를 수 없습니다."),
-	ALREADY_MIN_CREDIT_SCORE(HttpStatus.BAD_REQUEST, 1506, "신용점수가 더 이상 떨어질 수 없습니다.");
+	NOT_FOUND_UPDATE_CREDIT_RATE(HttpStatus.BAD_REQUEST, 1504, "수정될 신용비율이 입력되지 않았습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;

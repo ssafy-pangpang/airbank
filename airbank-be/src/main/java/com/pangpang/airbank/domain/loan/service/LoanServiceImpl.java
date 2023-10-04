@@ -24,6 +24,7 @@ import com.pangpang.airbank.domain.loan.dto.PostCommonLoanRequestDto;
 import com.pangpang.airbank.domain.loan.dto.PostRepaidLoanResponseDto;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
+import com.pangpang.airbank.domain.member.service.MemberService;
 import com.pangpang.airbank.global.common.response.CommonAmountResponseDto;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.FundException;
@@ -55,6 +56,7 @@ public class LoanServiceImpl implements LoanService {
 	private final GroupRepository groupRepository;
 	private final FundService fundService;
 	private final InterestRepository interestRepository;
+	private final MemberService memberService;
 
 	/**
 	 *  땡겨쓰기(한도, 땡겨쓴 금액)를 조회하는 메소드, 부모와 자녀가 조회 가능하다.
@@ -133,6 +135,13 @@ public class LoanServiceImpl implements LoanService {
 			postCommonLoanRequestDto.getAmount(), TransactionType.LOAN);
 		TransferResponseDto response = transferService.transfer(transferRequestDto);
 		fundManagement.plusLoanAmount(response.getAmount());
+
+		// 신용 점수 감소
+		try {
+			memberService.updateCreditScoreByRate(memberId, -0.3);
+		} catch (MemberException e) {
+			log.info(e.getMessage());
+		}
 
 		return CommonAmountResponseDto.from(response.getAmount());
 	}

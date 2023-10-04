@@ -12,6 +12,7 @@ import com.pangpang.airbank.domain.account.service.TransferService;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
+import com.pangpang.airbank.domain.member.service.MemberService;
 import com.pangpang.airbank.domain.savings.domain.Savings;
 import com.pangpang.airbank.domain.savings.domain.SavingsItem;
 import com.pangpang.airbank.domain.savings.dto.GetCurrentSavingsResponseDto;
@@ -27,6 +28,7 @@ import com.pangpang.airbank.global.common.response.CommonAmountResponseDto;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.GroupException;
+import com.pangpang.airbank.global.error.exception.MemberException;
 import com.pangpang.airbank.global.error.exception.SavingsException;
 import com.pangpang.airbank.global.error.info.AccountErrorInfo;
 import com.pangpang.airbank.global.error.info.GroupErrorInfo;
@@ -50,6 +52,7 @@ public class SavingsServiceImpl implements SavingsService {
 	private final AccountService accountService;
 	private final AccountRepository accountRepository;
 	private final TransferService transferService;
+	private final MemberService memberService;
 
 	/**
 	 *  현재 진행중인 티끌모으기 정보를 조회하는 메소드
@@ -219,6 +222,14 @@ public class SavingsServiceImpl implements SavingsService {
 		TransferResponseDto response = transferService.transfer(transferRequestDto);
 
 		savings.transferSavings(amount);
+
+		// 신용 점수 증가
+		try {
+			memberService.updateCreditScoreByRate(memberId, 0.1);
+		} catch (MemberException e) {
+			log.info(e.getMessage());
+		}
+
 		return CommonAmountResponseDto.from(response.getAmount());
 	}
 

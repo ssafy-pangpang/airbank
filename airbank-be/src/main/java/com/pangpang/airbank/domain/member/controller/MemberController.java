@@ -128,7 +128,6 @@ public class MemberController {
 	 *  신용점수 수정 test
 	 *
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
-	 * @param groupId Long
 	 * @param points Integer
 	 * @return ResponseEntity<EnvelopeResponse < Void>>
 	 * @see MemberService
@@ -136,10 +135,9 @@ public class MemberController {
 	@PostMapping("/credit")
 	public ResponseEntity<EnvelopeResponse<Void>> updateCreditScore(
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
-		@RequestParam("group_id") Long groupId,
 		@RequestParam("points") Integer points) {
 
-		memberService.updateCreditScoreByPoints(authenticatedMemberArgument.getMemberId(), groupId, points);
+		memberService.updateCreditScoreByPoints(authenticatedMemberArgument.getMemberId(), points);
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<Void>builder()
 				.code(HttpStatus.OK.value())
