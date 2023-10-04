@@ -138,7 +138,7 @@ public class GroupServiceImpl implements GroupService {
 			throw new GroupException(GroupErrorInfo.CONFIRM_ENROLLMENT_PERMISSION_DENIED);
 		}
 
-		Group group = groupRepository.findByIdAndChildIdAndActivatedFalseWithParentAndChild(groupId, memberId)
+		Group group = groupRepository.findByIdAndChildIdAndActivatedFalseWithParentAndChild(groupId)
 			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
 
 		Member parent = group.getParent();
