@@ -2,6 +2,7 @@ package com.pangpang.airbank.domain.fund.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -486,8 +487,43 @@ public class FundServiceImpl implements FundService {
 				Account childAccount = accountRepository.findByMemberAndType(child, AccountType.MAIN_ACCOUNT)
 					.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
 
+				Optional<Confiscation> optionalConfiscation = confiscationRepository.findByGroupAndActivatedTrue(
+					group);
+
+				Long allowanceAmount = fundManagement.getAllowanceAmount();
+				if (optionalConfiscation.isPresent()) {
+					// 차압 상태면
+					Confiscation confiscation = optionalConfiscation.get();
+
+					Long remainAmount = confiscation.getAmount() - confiscation.getRepaidAmount();
+					Long paymentAmount = (long)(allowanceAmount * (fundManagement.getConfiscationRate() / 100.0));
+
+					if (remainAmount < paymentAmount) {
+						allowanceAmount -= remainAmount;
+						confiscation.plusReapidAmount(remainAmount);
+					} else {
+						allowanceAmount -= paymentAmount;
+						confiscation.plusReapidAmount(paymentAmount);
+					}
+
+					// 압류금 전체를 변제 했다면 압류 비활성화 + 땡겨쓰기 초기화 + 전체 이자 납부 처리
+					if (confiscation.getAmount().equals(confiscation.getRepaidAmount())) {
+						confiscation.updateActivated(false);
+
+						fundManagement.resetLoanLimitAndLoanAmount(
+							fundManagement.getLoanLimit() - fundManagement.getLoanAmount(), 0L);
+
+						// 이자 납부 처리
+						List<Interest> interests = interestRepository.findAllByGroupAndActivatedFalseAndBilledAtLessThanEqual(
+							group, LocalDate.now());
+						for (Interest interest : interests) {
+							interest.updateActivated(true);
+						}
+					}
+				}
+
 				TransferResponseDto response = transferService.transfer(
-					TransferRequestDto.of(parentAccount, childAccount, fundManagement.getAllowanceAmount(),
+					TransferRequestDto.of(parentAccount, childAccount, allowanceAmount,
 						TransactionType.ALLOWANCE));
 				log.info(group.getId() + " 그룹 용돈 자동이체 SUCCESS / 이체 금액 : " + response.getAmount());
 			} catch (RuntimeException e) {
