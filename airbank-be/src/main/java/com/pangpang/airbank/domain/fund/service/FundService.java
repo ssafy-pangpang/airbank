@@ -41,4 +41,6 @@ public interface FundService {
 	void transferAllowanceByCron();
 
 	void confiscateLoanByCron();
+
+	void checkNoPaymentInterests();
 }
