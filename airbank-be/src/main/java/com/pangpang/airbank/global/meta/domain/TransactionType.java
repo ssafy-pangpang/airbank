@@ -9,21 +9,23 @@ import lombok.Getter;
 
 @Getter
 public enum TransactionType {
-	TAX(1, "TAX"),
-	INTEREST(2, "INTEREST"),
-	BONUS(3, "BONUS"),
-	ALLOWANCE(4, "ALLOWANCE"),
-	MISSION(5, "MISSION"),
-	CONFISCATION(6, "CONFISCATION"),
-	LOAN(7, "LOAN"),
-	SAVINGS(8, "SAVINGS");
+	TAX(1, "TAX", "세금"),
+	INTEREST(2, "INTEREST", "이자"),
+	BONUS(3, "BONUS", "보너스"),
+	ALLOWANCE(4, "ALLOWANCE", "용돈"),
+	MISSION(5, "MISSION", "미션"),
+	CONFISCATION(6, "CONFISCATION", "압류"),
+	LOAN(7, "LOAN", "땡겨쓰기"),
+	SAVINGS(8, "SAVINGS", "티끌 모으기");
 
 	private final Integer id;
 	private final String name;
+	private final String msgName;
 
-	TransactionType(int id, String name) {
+	TransactionType(int id, String name, String msgName) {
 		this.id = id;
 		this.name = name;
+		this.msgName = msgName;
 	}
 
 	public static TransactionType ofName(String name) {

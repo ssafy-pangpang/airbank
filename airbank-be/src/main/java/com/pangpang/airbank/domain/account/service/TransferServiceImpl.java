@@ -7,21 +7,19 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.pangpang.airbank.domain.account.domain.Account;
 import com.pangpang.airbank.domain.account.dto.DepositTransferRequestDto;
 import com.pangpang.airbank.domain.account.dto.SaveDepositHistoryRequestDto;
 import com.pangpang.airbank.domain.account.dto.SaveWithdrawalHistoryRequestDto;
 import com.pangpang.airbank.domain.account.dto.TransferRequestDto;
 import com.pangpang.airbank.domain.account.dto.TransferResponseDto;
 import com.pangpang.airbank.domain.account.dto.WithdrawalTransferRequestDto;
-import com.pangpang.airbank.domain.account.repository.AccountRepository;
+import com.pangpang.airbank.domain.notification.dto.CreateNotificationDto;
+import com.pangpang.airbank.domain.notification.service.NotificationService;
 import com.pangpang.airbank.global.common.api.nh.NHApi;
 import com.pangpang.airbank.global.common.api.nh.dto.PostDepositTransferResponseDto;
 import com.pangpang.airbank.global.common.api.nh.dto.PostWithdrawalTransferResponseDto;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.info.AccountErrorInfo;
-import com.pangpang.airbank.global.meta.domain.AccountType;
-import com.pangpang.airbank.global.meta.domain.TransactionType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +30,7 @@ public class TransferServiceImpl implements TransferService {
 
 	private final NHApi nhApi;
 	private final AccountHistoryService accountHistoryService;
+	private final NotificationService notificationService;
 
 	@Override
 	@Transactional
@@ -57,6 +56,7 @@ public class TransferServiceImpl implements TransferService {
 			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
 		}
 
+		notificationService.saveNotification(CreateNotificationDto.from(transferRequestDto, "withdraw"));
 	}
 
 	private TransferResponseDto deposit(TransferRequestDto transferRequestDto) {
@@ -76,6 +76,7 @@ public class TransferServiceImpl implements TransferService {
 			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
 		}
 
+		notificationService.saveNotification(CreateNotificationDto.from(transferRequestDto, "deposit"));
 		return TransferResponseDto.from(transferRequestDto.getAmount());
 	}
 
