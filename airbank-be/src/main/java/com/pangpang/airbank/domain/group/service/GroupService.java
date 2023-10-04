@@ -1,6 +1,7 @@
 package com.pangpang.airbank.domain.group.service;
 
 import com.pangpang.airbank.domain.group.dto.CommonFundManagementRequestDto;
+import com.pangpang.airbank.domain.group.dto.GetFundManagementResponseDto;
 import com.pangpang.airbank.domain.group.dto.GetPartnersResponseDto;
 import com.pangpang.airbank.domain.group.dto.PatchConfirmChildRequestDto;
 import com.pangpang.airbank.domain.group.dto.PatchFundManagementResponseDto;
@@ -20,6 +21,8 @@ public interface GroupService {
 
 	PatchFundManagementResponseDto updateFundManagement(Long memberId,
 		CommonFundManagementRequestDto commonFundManagementRequestDto, Long groupId);
+
+	GetFundManagementResponseDto getFundManagement(Long memberId, Long groupId);
 
 	Boolean isMemberInGroup(Long memberId, Long groupId);
 }

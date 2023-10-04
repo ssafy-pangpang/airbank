@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pangpang.airbank.domain.group.dto.CommonFundManagementRequestDto;
+import com.pangpang.airbank.domain.group.dto.GetFundManagementResponseDto;
 import com.pangpang.airbank.domain.group.dto.GetPartnersResponseDto;
 import com.pangpang.airbank.domain.group.dto.PatchConfirmChildRequestDto;
 import com.pangpang.airbank.domain.group.dto.PatchFundManagementResponseDto;
 import com.pangpang.airbank.domain.group.dto.PostEnrollChildRequestDto;
 import com.pangpang.airbank.domain.group.service.GroupService;
+import com.pangpang.airbank.global.aop.CheckGroup;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
@@ -186,6 +188,32 @@ public class GroupController {
 				.data(groupService.updateFundManagement(authenticatedMemberArgument.getMemberId(),
 					commonFundManagementRequestDto,
 					groupId))
+				.build());
+	}
+
+	/**
+	 * 자금 관리 조회
+	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
+	 * @return ResponseEntity<EnvelopeResponse < GetFundManagementResponseDto>>
+	 * @see GroupService
+	 */
+	@Operation(summary = "자금 관리 조회",
+		description = "해당 그룹의 자금 관리를 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "자금 관리 조회 성공",
+			content = @Content(schema = @Schema(implementation = GetPartnersResponseDto.class))),
+		@ApiResponse(responseCode = "1200", description = "자금 관리를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1306", description = "사용자가 해당 그룹에 속해있지 않습니다.", content = @Content),
+	})
+	@CheckGroup
+	@GetMapping("/fund")
+	public ResponseEntity<EnvelopeResponse<GetFundManagementResponseDto>> getFundManagement(
+		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@RequestParam("group_id") Long groupId) {
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<GetFundManagementResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(groupService.getFundManagement(authenticatedMemberArgument.getMemberId(), groupId))
 				.build());
 	}
 }
