@@ -35,4 +35,6 @@ public interface FundService {
 	void confiscateLoan(Long childId, Long groupId);
 
 	void transferAllowanceByCron();
+
+	void confiscateLoanByCron();
 }
