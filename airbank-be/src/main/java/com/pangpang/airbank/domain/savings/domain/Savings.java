@@ -146,4 +146,9 @@ public class Savings extends BaseTimeEntity {
 		this.totalAmount += amount;
 		this.paymentCount++;
 	}
+
+	public void delay() {
+		this.delayCount++;
+		this.expiredAt = this.expiredAt.plusMonths(1);
+	}
 }

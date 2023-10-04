@@ -20,6 +20,7 @@ import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -56,7 +57,7 @@ public class LoanController {
 	@CheckGroup
 	@GetMapping()
 	public ResponseEntity<EnvelopeResponse<GetLoanResponseDto>> getLoan(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestParam("group_id") Long groupId) {
 
 		return ResponseEntity.ok()
@@ -88,7 +89,7 @@ public class LoanController {
 	})
 	@PostMapping()
 	public ResponseEntity<EnvelopeResponse<CommonAmountResponseDto>> withdrawLoan(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PostCommonLoanRequestDto postCommonLoanRequestDto) {
 
 		return ResponseEntity.ok()
@@ -119,7 +120,7 @@ public class LoanController {
 	})
 	@PostMapping("/repaid")
 	public ResponseEntity<EnvelopeResponse<PostRepaidLoanResponseDto>> repaidLoan(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PostCommonLoanRequestDto postCommonLoanRequestDto) {
 
 		return ResponseEntity.ok()

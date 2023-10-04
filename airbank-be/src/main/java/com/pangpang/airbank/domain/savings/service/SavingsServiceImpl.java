@@ -1,5 +1,8 @@
 package com.pangpang.airbank.domain.savings.service;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +14,7 @@ import com.pangpang.airbank.domain.account.service.AccountService;
 import com.pangpang.airbank.domain.account.service.TransferService;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
+import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.domain.member.service.MemberService;
 import com.pangpang.airbank.domain.savings.domain.Savings;
@@ -53,6 +57,7 @@ public class SavingsServiceImpl implements SavingsService {
 	private final AccountRepository accountRepository;
 	private final TransferService transferService;
 	private final MemberService memberService;
+	private final SavingsConstantProvider savingsConstantProvider;
 
 	/**
 	 *  현재 진행중인 티끌모으기 정보를 조회하는 메소드
@@ -287,4 +292,49 @@ public class SavingsServiceImpl implements SavingsService {
 		savings.updateStatus(SavingsStatus.SUCCESS);
 		return CommonAmountResponseDto.from(response1.getAmount() + response2.getAmount());
 	}
+
+	/**
+	 *  티끌모으기 납부가 지연되었는지 확인하는 메소드
+	 *
+	 * @see SavingsRepository
+	 * @see AccountRepository
+	 * @see TransferService
+	 */
+	@Transactional
+	@Override
+	public void confirmDelaySavings() {
+		// TODO: 매일 오전 00시에 실행
+		List<Savings> savingsList = savingsRepository.findAllByStatusEqualsWithGroupAndChild(SavingsStatus.PROCEEDING);
+		LocalDate now = LocalDate.now();
+
+		for (Savings savings : savingsList) {
+			LocalDate failDate = savings.getStartedAt()
+				.plusMonths(savings.getPaymentCount())
+				.plusMonths(savings.getDelayCount())
+				.plusMonths(1)
+				.plusDays(1);
+
+			if (now.equals(failDate)) {
+				savings.delay();
+			}
+
+			if (savings.getDelayCount() >= savingsConstantProvider.getFailThreshold()) {
+				Group group = savings.getGroup();
+				Member child = group.getChild();
+				savings.updateStatus(SavingsStatus.FAIL);
+
+				// 티끌모으기 잔액 자녀 계좌로 송금
+				Account mainAccount = accountRepository.findByMemberAndType(child, AccountType.MAIN_ACCOUNT)
+					.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+				Account savingsAccount = accountRepository.findByMemberAndType(child, AccountType.SAVINGS_ACCOUNT)
+					.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_SAVINGS_ACCOUNT));
+
+				TransferRequestDto transferRequestDto = TransferRequestDto.of(savingsAccount, mainAccount,
+					savings.getTotalAmount(), TransactionType.SAVINGS);
+				TransferResponseDto response = transferService.transfer(transferRequestDto);
+			}
+		}
+
+	}
+
 }

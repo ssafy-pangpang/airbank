@@ -25,6 +25,7 @@ import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -62,7 +63,7 @@ public class SavingsController {
 	// @CheckGroup
 	@GetMapping("/current")
 	public ResponseEntity<EnvelopeResponse<GetCurrentSavingsResponseDto>> getCurrentSavings(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestParam("group_id") Long groupId) {
 
 		return ResponseEntity.ok()
@@ -92,7 +93,7 @@ public class SavingsController {
 	})
 	@PostMapping("/item")
 	public ResponseEntity<EnvelopeResponse<CommonIdResponseDto>> saveSavings(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PostSaveSavingsRequestDto postSaveSavingsRequestDto) {
 
 		return ResponseEntity.status(HttpStatus.CREATED)
@@ -122,7 +123,7 @@ public class SavingsController {
 	})
 	@PatchMapping("/confirm")
 	public ResponseEntity<EnvelopeResponse<PatchCommonSavingsResponseDto>> confirmEnrollmentSavings(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PatchConfirmSavingsRequestDto patchConfirmSavingsRequestDto,
 		@RequestParam("group_id") Long groupId) {
 
@@ -156,7 +157,7 @@ public class SavingsController {
 	})
 	@PatchMapping("/cancel")
 	public ResponseEntity<EnvelopeResponse<PatchCommonSavingsResponseDto>> cancelSavings(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PatchCancelSavingsRequestDto patchCancelSavingsRequestDto) {
 
 		return ResponseEntity.ok()
@@ -188,7 +189,7 @@ public class SavingsController {
 	})
 	@PostMapping()
 	public ResponseEntity<EnvelopeResponse<CommonAmountResponseDto>> transferSavings(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PostTransferSavingsRequestDto postTransferSavingsRequestDto) {
 
 		return ResponseEntity.ok()
@@ -222,7 +223,7 @@ public class SavingsController {
 	})
 	@PostMapping("/reward")
 	public ResponseEntity<EnvelopeResponse<CommonAmountResponseDto>> rewardSavings(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PostRewardSavingsRequestDto postRewardSavingsRequestDto, @RequestParam("group_id") Long groupId) {
 
 		return ResponseEntity.ok()
@@ -231,6 +232,22 @@ public class SavingsController {
 				.data(
 					savingsService.rewardSavings(authenticatedMemberArgument.getMemberId(), postRewardSavingsRequestDto,
 						groupId))
+				.build());
+	}
+
+	/**
+	 *  티끌모으기 납부 지연 확인, Cron 테스트
+	 *
+	 * @see SavingsService
+	 */
+	@GetMapping("/delay-cron")
+	public ResponseEntity<EnvelopeResponse<Void>> confirmDelaySavings() {
+		savingsService.confirmDelaySavings();
+
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<Void>builder()
+				.code(HttpStatus.OK.value())
+				.data(null)
 				.build());
 	}
 }
