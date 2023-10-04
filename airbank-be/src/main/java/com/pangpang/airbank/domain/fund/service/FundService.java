@@ -19,6 +19,8 @@ public interface FundService {
 
 	void createTaxes();
 
+	void refundTaxes();
+
 	GetInterestResponseDto getInterest(Long memberId, Long groupId);
 
 	PostTransferInterestResponseDto transferInterest(Long memberId,

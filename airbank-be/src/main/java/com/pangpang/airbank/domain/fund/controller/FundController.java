@@ -282,4 +282,32 @@ public class FundController {
 				.code(HttpStatus.OK.value())
 				.build());
 	}
+
+	/**
+	 * 세금 생성 cron
+	 * 저번 달 기준으로 세금 생성하고 이미 생성된 세금 있으면 생성 안됨
+	 * @return ResponseEntity<EnvelopeResponse < Void>>
+	 */
+	@GetMapping("/tax-cron")
+	public ResponseEntity<EnvelopeResponse<Void>> createTax() {
+		fundService.createTaxes();
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<Void>builder()
+				.code(HttpStatus.OK.value())
+				.build());
+	}
+
+	/**
+	 * 세금 환급 cron
+	 * 저번 달 세금 납부 시, 신용등급에 따라 환급
+	 * @return ResponseEntity<EnvelopeResponse < Void>>
+	 */
+	@GetMapping("/tax-refund-cron")
+	public ResponseEntity<EnvelopeResponse<Void>> transferRefundTax() {
+		fundService.refundTaxes();
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<Void>builder()
+				.code(HttpStatus.OK.value())
+				.build());
+	}
 }

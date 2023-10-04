@@ -16,7 +16,8 @@ public enum TransactionType {
 	MISSION(5, "MISSION", "미션"),
 	CONFISCATION(6, "CONFISCATION", "압류"),
 	LOAN(7, "LOAN", "땡겨쓰기"),
-	SAVINGS(8, "SAVINGS", "티끌 모으기");
+	SAVINGS(8, "SAVINGS", "티끌 모으기"),
+	TAX_REFUND(9, "TAX_REFUND", "세금 환금");
 
 	private final Integer id;
 	private final String name;

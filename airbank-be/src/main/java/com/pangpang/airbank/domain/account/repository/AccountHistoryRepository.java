@@ -33,4 +33,13 @@ public interface AccountHistoryRepository extends JpaRepository<AccountHistory, 
 		+ "from account_history a "
 		+ "where a.account = :account")
 	List<AccountHistoryElement> findAllAccountHistoryByAccount(Account account);
+
+	// 이번 달 세금 환급 여부
+	@Query("""
+		 	SELECT COUNT(ah) > 0 FROM account_history ah
+			WHERE ah.transactionPartner.id=:childId AND ah.transactionType=:type
+			AND YEAR(ah.apiCreatedAt)=YEAR(:expiredAt) AND MONTH(ah.apiCreatedAt)=MONTH(:expiredAt)
+		""")
+	Boolean existsAccountHistoryByApiCreatedAtAndGroupIdAndTransactionType(Long childId, LocalDate expiredAt,
+		TransactionType type);
 }

@@ -18,7 +18,8 @@ public enum NotificationType {
 	MISSION(5, "MISSION"),
 	CONFISCATION(6, "CONFISCATION"),
 	LOAN(7, "LOAN"),
-	SAVINGS(8, "SAVINGS");
+	SAVINGS(8, "SAVINGS"),
+	TAX_REFUND(9, "TAX_REFUND");
 
 	private final Integer id;
 	private final String name;
