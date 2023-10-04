@@ -12,6 +12,7 @@ import com.pangpang.airbank.domain.fund.domain.FundManagement;
 import com.pangpang.airbank.domain.fund.repository.FundManagementRepository;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.dto.CommonFundManagementRequestDto;
+import com.pangpang.airbank.domain.group.dto.GetFundManagementResponseDto;
 import com.pangpang.airbank.domain.group.dto.GetPartnersResponseDto;
 import com.pangpang.airbank.domain.group.dto.PatchConfirmChildRequestDto;
 import com.pangpang.airbank.domain.group.dto.PatchFundManagementResponseDto;
@@ -199,6 +200,22 @@ public class GroupServiceImpl implements GroupService {
 
 		fundManagement.updateFundManagement(commonFundManagementRequestDto);
 		return PatchFundManagementResponseDto.from(commonFundManagementRequestDto);
+	}
+
+	/**
+	 * 자금 관리를 groupid로 조회하는 메소드
+	 *
+	 * @param memberId
+	 * @param groupId
+	 * @return GetFundManagementResponseDto
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public GetFundManagementResponseDto getFundManagement(Long memberId, Long groupId) {
+		FundManagement fundManagement = fundManagementRepository.findByGroupId(groupId)
+			.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_FUND_MANAGEMENT_BY_GROUP));
+
+		return GetFundManagementResponseDto.from(fundManagement);
 	}
 
 	/**
