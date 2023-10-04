@@ -86,8 +86,8 @@ public class NHApi {
 			.bodyToMono(String.class)
 			.block();
 
-		GetCheckFinAccountResponseDto response = objectMapper.readValue(result,
-			GetCheckFinAccountResponseDto.class);
+		GetCheckFinAccountResponseDto response = objectMapper.readValue(result, GetCheckFinAccountResponseDto.class);
+
 		if (!response.getHeader().getRsms().contains(nhApiConstantProvider.getNormalProcessingMessage())) {
 			throw new AccountException(AccountErrorInfo.ACCOUNT_ENROLL_ERROR);
 		}
