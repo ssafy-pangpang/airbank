@@ -38,8 +38,6 @@ public class MemberServiceImpl implements MemberService {
 	private final MemberRepository memberRepository;
 	private final GroupRepository groupRepository;
 	private final CreditHistoryRepository creditHistoryRepository;
-	private final ConfiscationConstantProvider confiscationConstantProvider;
-	private final FundService fundService;
 
 	/**
 	 *  사용자 조회
@@ -171,27 +169,24 @@ public class MemberServiceImpl implements MemberService {
 	 *  신용점수 수정
 	 *
 	 * @param childId Long
-	 * @param groupId Long
 	 * @param points Integer
 	 * @see CreditRating
 	 * @see CreditHistoryRepository
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
-	public void updateCreditScoreByPoints(Long childId, Long groupId, Integer points) {
+	public void updateCreditScoreByPoints(Long childId, Integer points) {
 		if (points == 0) {
 			throw new MemberException(MemberErrorInfo.NOT_FOUND_UPDATE_CREDIT_POINTS);
 		}
 
 		Member member = getMemberByIdOrElseThrowException(childId);
 
-		Integer currentCreditRating = CreditRating.getCreditRating(member.getCreditScore()).getRating();
-
 		if (member.getCreditScore().equals(CreditRating.ONE.getMaxScore()) && (points > 0)) {
-			throw new MemberException(MemberErrorInfo.ALREADY_MAX_CREDIT_SCORE);
+			return;
 		}
 		if (member.getCreditScore().equals(CreditRating.TEN.getMinScore()) && (points < 0)) {
-			throw new MemberException(MemberErrorInfo.ALREADY_MIN_CREDIT_SCORE);
+			return;
 		}
 
 		member.updateCreditScore(points);
@@ -203,27 +198,24 @@ public class MemberServiceImpl implements MemberService {
 	 *  신용점수 비율로 수정
 	 *
 	 * @param childId Long
-	 * @param groupId Long
 	 * @param rate Double
 	 * @see CreditRating
 	 * @see CreditHistoryRepository
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
-	public void updateCreditScoreByRate(Long childId, Long groupId, Double rate) {
+	public void updateCreditScoreByRate(Long childId, Double rate) {
 		if (Double.compare(rate, 0D) == 0) {
 			throw new MemberException(MemberErrorInfo.NOT_FOUND_UPDATE_CREDIT_RATE);
 		}
 
 		Member member = getMemberByIdOrElseThrowException(childId);
 
-		Integer currentCreditRating = CreditRating.getCreditRating(member.getCreditScore()).getRating();
-
 		if (member.getCreditScore().equals(CreditRating.ONE.getMaxScore()) && (Double.compare(rate, 0D) > 0)) {
-			throw new MemberException(MemberErrorInfo.ALREADY_MAX_CREDIT_SCORE);
+			return;
 		}
 		if (member.getCreditScore().equals(CreditRating.TEN.getMinScore()) && (Double.compare(rate, 0D) < 0)) {
-			throw new MemberException(MemberErrorInfo.ALREADY_MIN_CREDIT_SCORE);
+			return;
 		}
 
 		CreditRating creditRating = CreditRating.getCreditRating(member.getCreditScore());
