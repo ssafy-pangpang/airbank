@@ -63,7 +63,7 @@ public class AccountServiceImpl implements AccountService {
 	 */
 	@Override
 	@Transactional
-	public void saveVirtualAccount(Long memberId, AccountType type) {
+	public Account saveVirtualAccount(Long memberId, AccountType type) {
 		Account account = accountRepository.findFirstByMemberIsNullOrMemberIdAndType(memberId, type)
 			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_AVAILABLE_ACCOUNT));
 
@@ -74,6 +74,8 @@ public class AccountServiceImpl implements AccountService {
 			saveFinAccount(account, postEnrollAccountRequestDto);
 			account.addMember(memberRepository.getReferenceById(memberId));
 		}
+
+		return account;
 	}
 
 	/**

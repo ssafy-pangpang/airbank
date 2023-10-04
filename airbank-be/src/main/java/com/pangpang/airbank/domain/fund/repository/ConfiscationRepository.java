@@ -13,4 +13,6 @@ public interface ConfiscationRepository extends JpaRepository<Confiscation, Long
 	Optional<Confiscation> findByGroupAndActivatedTrue(Group group);
 
 	Boolean existsByGroupIdAndActivatedTrue(Long groupId);
+
+	Boolean existsByGroupAndActivatedTrue(Group group);
 }

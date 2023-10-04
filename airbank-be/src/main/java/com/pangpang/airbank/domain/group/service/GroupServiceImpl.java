@@ -6,8 +6,11 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pangpang.airbank.domain.account.domain.Account;
+import com.pangpang.airbank.domain.account.dto.TransferRequestDto;
 import com.pangpang.airbank.domain.account.repository.AccountRepository;
 import com.pangpang.airbank.domain.account.service.AccountService;
+import com.pangpang.airbank.domain.account.service.TransferService;
 import com.pangpang.airbank.domain.fund.domain.FundManagement;
 import com.pangpang.airbank.domain.fund.repository.FundManagementRepository;
 import com.pangpang.airbank.domain.group.domain.Group;
@@ -23,14 +26,17 @@ import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.domain.notification.dto.CreateNotificationDto;
 import com.pangpang.airbank.domain.notification.service.NotificationService;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
+import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
 import com.pangpang.airbank.global.error.exception.MemberException;
+import com.pangpang.airbank.global.error.info.AccountErrorInfo;
 import com.pangpang.airbank.global.error.info.FundErrorInfo;
 import com.pangpang.airbank.global.error.info.GroupErrorInfo;
 import com.pangpang.airbank.global.error.info.MemberErrorInfo;
 import com.pangpang.airbank.global.meta.domain.AccountType;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
+import com.pangpang.airbank.global.meta.domain.TransactionType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +49,9 @@ public class GroupServiceImpl implements GroupService {
 	private final MemberRepository memberRepository;
 	private final FundManagementRepository fundManagementRepository;
 	private final AccountService accountService;
-	private final AccountRepository accountRepository;
 	private final NotificationService notificationService;
+	private final AccountRepository accountRepository;
+	private final TransferService transferService;
 
 	/**
 	 *  로그인 사용자의 현재 그룹에 있는 멤버를 조회하는 메소드
@@ -134,11 +141,23 @@ public class GroupServiceImpl implements GroupService {
 		Group group = groupRepository.findByIdAndChildIdAndActivatedFalseWithParentAndChild(groupId, memberId)
 			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
 
+		Member parent = group.getParent();
 		if (patchConfirmChildRequestDto.getIsAccept()) {
 			group.setActivated(true);
 
 			// Loan 가상 계좌 생성
-			accountService.saveVirtualAccount(memberId, AccountType.LOAN_ACCOUNT);
+			Account loanAccount = accountService.saveVirtualAccount(memberId, AccountType.LOAN_ACCOUNT);
+
+			// 가상 계좌 한도 충전
+			Account parentAccount = accountRepository.findByMemberAndType(parent, AccountType.MAIN_ACCOUNT)
+				.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+
+			FundManagement fundManagement = fundManagementRepository.findByGroup(group)
+				.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_FUND_MANAGEMENT_BY_GROUP));
+
+			transferService.transfer(
+				TransferRequestDto.of(parentAccount, loanAccount, fundManagement.getLoanLimit(), TransactionType.LOAN));
+
 			return CommonIdResponseDto.from(group.getId());
 		}
 
@@ -146,7 +165,6 @@ public class GroupServiceImpl implements GroupService {
 
 		// 알림
 		Member child = group.getChild();
-		Member parent = group.getParent();
 
 		notificationService.saveNotification(
 			CreateNotificationDto.ofGroup(child, parent, patchConfirmChildRequestDto.getIsAccept()));
