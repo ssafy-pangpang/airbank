@@ -50,6 +50,7 @@ import com.pangpang.airbank.global.error.info.MemberErrorInfo;
 import com.pangpang.airbank.global.meta.domain.AccountType;
 import com.pangpang.airbank.global.meta.domain.CreditRating;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
+import com.pangpang.airbank.global.meta.domain.TaxRefund;
 import com.pangpang.airbank.global.meta.domain.TransactionDistinction;
 import com.pangpang.airbank.global.meta.domain.TransactionType;
 
@@ -162,6 +163,25 @@ public class FundServiceImpl implements FundService {
 	}
 
 	/**
+	 * 모든 아이들에 대한 세금 환급 기능
+	 */
+	@Override
+	@Transactional
+	public void refundTaxes() {
+		// 지난 달
+		LocalDate preMonthDate = LocalDate.now().minusMonths(1);
+
+		int limitCreditScore = CreditRating.THREE.getMinScore();
+
+		List<Member> memberList = memberRepository.findAllByCreditScoreGreaterThanEqualAndRole(limitCreditScore,
+			MemberRole.CHILD);
+
+		for (Member member : memberList) {
+			saveTaxRefund(member, preMonthDate);
+		}
+	}
+
+	/**
 	 * 밀린 세금 금액
 	 *
 	 * @param groupId
@@ -211,6 +231,47 @@ public class FundServiceImpl implements FundService {
 		}
 
 		taxRepository.save(Tax.of(taxAmount, expiredDate, group));
+	}
+
+	/**
+	 * 한 아이에 대한 세금 환급 계산
+	 * @param member
+	 * @param preMonthDate
+	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = RuntimeException.class)
+	public void saveTaxRefund(Member member, LocalDate preMonthDate) {
+		TaxRefund taxRefund = TaxRefund.ofCreditRating(
+			CreditRating.getCreditRating(member.getCreditScore()).getRating());
+		Group group = groupRepository.findByChildIdAndActivatedTrue(member.getId())
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
+
+		// 저번 달 세금 냈는지 확인
+		Tax tax = taxRepository.findByGroupIdAndExpiredAt_MonthValueAndExpiredAt_Year(group.getId(), preMonthDate)
+			.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_TAX_BY_GROUP));
+		if (!tax.getActivated()) {
+			return;
+		}
+
+		// 환급할 세금
+		Long refundAmount = Math.round(tax.getAmount() * taxRefund.getRefundRatio());
+		if (refundAmount <= 0) {
+			return;
+		}
+
+		// 이번 달에 아이가 세금 환급을 받았는지 체크
+		Boolean existRefund = accountHistoryRepository.existsAccountHistoryByApiCreatedAtAndGroupIdAndTransactionType(
+			member.getId(), LocalDate.now(), TransactionType.TAX_REFUND);
+		if (existRefund) {
+			return;
+		}
+
+		// 송금
+		Account senderAccount = accountRepository.findByMemberIdAndType(group.getParent().getId(),
+			AccountType.MAIN_ACCOUNT).orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+		Account receiverAccount = accountRepository.findByMemberIdAndType(member.getId(),
+			AccountType.MAIN_ACCOUNT).orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+		transferService.transfer(TransferRequestDto.of(senderAccount, receiverAccount,
+			refundAmount, TransactionType.TAX_REFUND));
 	}
 
 	/**

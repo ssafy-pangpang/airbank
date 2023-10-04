@@ -1,5 +1,6 @@
 package com.pangpang.airbank.domain.member.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	Boolean existsByIdAndRoleEquals(Long id, MemberRole role);
 
 	Boolean existsByPhoneNumber(String phoneNumber);
+
+	List<Member> findAllByCreditScoreGreaterThanEqualAndRole(int creditScore, MemberRole role);
 }

@@ -14,7 +14,8 @@ public enum FundErrorInfo {
 	NOT_FOUND_TRANSFER_AMOUNT(HttpStatus.UNAUTHORIZED, 1205, "송금될 금액이 없습니다."),
 	REPAY_CONFISCATION_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 1206, "변제금을 송금할 권한이 없습니다."),
 	NOT_FOUND_CONFISCATION_BY_GROUP(HttpStatus.UNAUTHORIZED, 1207, "압류중인 재산을 찾을 수 없습니다."),
-	CONFISCATION_AMOUNT_EXCEEDED(HttpStatus.UNAUTHORIZED, 1208, "상환할 수 있는 변제금을 초과했습니다.");
+	CONFISCATION_AMOUNT_EXCEEDED(HttpStatus.UNAUTHORIZED, 1208, "상환할 수 있는 변제금을 초과했습니다."),
+	NOT_FOUND_TAX_BY_GROUP(HttpStatus.UNAUTHORIZED, 1209, "세금을 찾을 수 없습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;
