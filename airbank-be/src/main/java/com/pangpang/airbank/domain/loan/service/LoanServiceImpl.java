@@ -113,14 +113,18 @@ public class LoanServiceImpl implements LoanService {
 			throw new LoanException(LoanErrorInfo.WITHDRAW_LOAN_PERMISSION_DENIED);
 		}
 
+		Group group = groupRepository.findByChild(child)
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
+
+		if (confiscationRepository.existsByGroupAndActivatedTrue(group)) {
+			throw new LoanException(LoanErrorInfo.CONFISCATION_IN_PROCEEDING);
+		}
+
 		Account loanAccount = accountRepository.findByMemberAndType(child, AccountType.LOAN_ACCOUNT)
 			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_LOAN_ACCOUNT));
 
 		Account mainAccount = accountRepository.findByMemberAndType(child, AccountType.MAIN_ACCOUNT)
 			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
-
-		Group group = groupRepository.findByChild(child)
-			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
 
 		FundManagement fundManagement = fundManagementRepository.findByGroup(group)
 			.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_FUND_MANAGEMENT_BY_GROUP));

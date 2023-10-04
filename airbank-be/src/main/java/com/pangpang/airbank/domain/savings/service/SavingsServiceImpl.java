@@ -115,7 +115,7 @@ public class SavingsServiceImpl implements SavingsService {
 		savingsRepository.save(savings);
 		savingsItemRepository.save(savingsItem);
 
-		//알림
+		// 알림
 		Member child = group.getChild();
 		Member parent = group.getParent();
 

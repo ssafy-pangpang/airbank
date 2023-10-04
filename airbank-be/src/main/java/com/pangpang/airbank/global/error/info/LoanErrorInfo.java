@@ -10,7 +10,8 @@ public enum LoanErrorInfo {
 	CREDIT_SCORE_BELOW_THRESHOLD(HttpStatus.FORBIDDEN, 1401, "신용등급이 낮습니다."),
 	LOAN_BALANCE_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, 1402, "땡겨쓰기 계좌 잔액이 부족합니다."),
 	NOT_PAID_INTEREST(HttpStatus.FORBIDDEN, 1403, "이자가 상환되지 않았습니다."),
-	LOAN_BALANCE_REPAID_AMOUNT_EXCEEDED(HttpStatus.FORBIDDEN, 1404, "상환금액이 땡겨쓰기 한도를 초과했습니다.");
+	LOAN_BALANCE_REPAID_AMOUNT_EXCEEDED(HttpStatus.FORBIDDEN, 1404, "상환금액이 땡겨쓰기 한도를 초과했습니다."),
+	CONFISCATION_IN_PROCEEDING(HttpStatus.FORBIDDEN, 1405, "압류가 진행중이면 땡겨쓰기를 사용할 수 없습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;
