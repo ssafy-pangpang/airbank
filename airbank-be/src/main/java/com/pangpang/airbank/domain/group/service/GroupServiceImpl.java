@@ -20,6 +20,8 @@ import com.pangpang.airbank.domain.group.dto.PostEnrollChildRequestDto;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
+import com.pangpang.airbank.domain.notification.dto.CreateNotificationDto;
+import com.pangpang.airbank.domain.notification.service.NotificationService;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.error.exception.FundException;
 import com.pangpang.airbank.global.error.exception.GroupException;
@@ -42,6 +44,7 @@ public class GroupServiceImpl implements GroupService {
 	private final FundManagementRepository fundManagementRepository;
 	private final AccountService accountService;
 	private final AccountRepository accountRepository;
+	private final NotificationService notificationService;
 
 	/**
 	 *  로그인 사용자의 현재 그룹에 있는 멤버를 조회하는 메소드
@@ -82,25 +85,29 @@ public class GroupServiceImpl implements GroupService {
 	@Transactional
 	@Override
 	public CommonIdResponseDto enrollChild(Long memberId, PostEnrollChildRequestDto postEnrollChildRequestDto) {
-		Member member = memberRepository.findById(memberId)
+		Member parent = memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
 
-		if (!member.getRole().getName().equals(MemberRole.PARENT.getName())) {
+		if (!parent.getRole().getName().equals(MemberRole.PARENT.getName())) {
 			throw new GroupException(GroupErrorInfo.ENROLL_CHILD_PERMISSION_DENIED);
 		}
 
-		Member childMember = memberRepository.findByChildPhoneNumber(postEnrollChildRequestDto.getPhoneNumber())
+		Member child = memberRepository.findByChildPhoneNumber(postEnrollChildRequestDto.getPhoneNumber())
 			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_CHILD_MEMBER_BY_PHONE_NUMBER));
 
-		groupRepository.findByChild(childMember).ifPresent((group) -> {
+		groupRepository.findByChild(child).ifPresent((group) -> {
 			if (group.getActivated()) {
 				throw new GroupException(GroupErrorInfo.ALREADY_HAD_PARENT);
 			}
 			throw new GroupException(GroupErrorInfo.ENROLL_IN_PROGRESS);
 		});
 
-		Group group = Group.of(member, childMember);
+		Group group = Group.of(parent, child);
 		groupRepository.save(group);
+
+		// 알림
+		notificationService.saveNotification(CreateNotificationDto.ofGroupConfirm(child, parent, group.getId()));
+
 		return CommonIdResponseDto.from(groupRepository.save(group).getId());
 	}
 
@@ -124,7 +131,7 @@ public class GroupServiceImpl implements GroupService {
 			throw new GroupException(GroupErrorInfo.CONFIRM_ENROLLMENT_PERMISSION_DENIED);
 		}
 
-		Group group = groupRepository.findByIdAndChildIdAndActivatedFalse(groupId, memberId)
+		Group group = groupRepository.findByIdAndChildIdAndActivatedFalseWithParentAndChild(groupId, memberId)
 			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
 
 		if (patchConfirmChildRequestDto.getIsAccept()) {
@@ -136,6 +143,14 @@ public class GroupServiceImpl implements GroupService {
 		}
 
 		group.setActivated(false);
+
+		// 알림
+		Member child = group.getChild();
+		Member parent = group.getParent();
+
+		notificationService.saveNotification(
+			CreateNotificationDto.ofGroup(child, parent, patchConfirmChildRequestDto.getIsAccept()));
+
 		return CommonIdResponseDto.from(group.getId());
 	}
 
