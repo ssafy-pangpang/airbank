@@ -44,4 +44,21 @@ public class CommonHeaderDto {
 			.accessToken(nhApiConstantProvider.getAccessToken())
 			.build();
 	}
+
+	@Override
+	public String toString() {
+		return "CommonHeaderDto{" +
+			"apiNm='" + apiNm + '\'' +
+			", tsymd='" + tsymd + '\'' +
+			", trtm='" + trtm + '\'' +
+			", iscd='" + iscd + '\'' +
+			", fintechApsno='" + fintechApsno + '\'' +
+			", apiSvcCd='" + apiSvcCd + '\'' +
+			", isTuno='" + isTuno + '\'' +
+			", accessToken='" + accessToken + '\'' +
+			", rpcd='" + rpcd + '\'' +
+			", rsms='" + rsms + '\'' +
+			", rgno='" + rgno + '\'' +
+			'}';
+	}
 }
