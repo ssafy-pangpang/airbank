@@ -64,7 +64,7 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@Transactional
 	public Account saveVirtualAccount(Long memberId, AccountType type) {
-		Account account = accountRepository.findFirstByMemberIsNullOrMemberIdAndType(memberId, type)
+		Account account = accountRepository.findFirstByMemberIsNullAndTypeOrMemberIdAndType(memberId, type)
 			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_AVAILABLE_ACCOUNT));
 
 		PostEnrollAccountRequestDto postEnrollAccountRequestDto = PostEnrollAccountRequestDto.fromVirtualAccount(
@@ -72,6 +72,8 @@ public class AccountServiceImpl implements AccountService {
 
 		if (account.getFinAccountNumber() == null) {
 			saveFinAccount(account, postEnrollAccountRequestDto);
+		}
+		if (account.getMember() == null) {
 			account.addMember(memberRepository.getReferenceById(memberId));
 		}
 
@@ -98,8 +100,7 @@ public class AccountServiceImpl implements AccountService {
 		// 핀-어카운트 발급 확인
 		GetCheckFinAccountResponseDto getCheckFinAccountResponseDto;
 		try {
-			getCheckFinAccountResponseDto = nhApi.checkOpenFinAccountDirect(
-				getFinAccountResponseDto.getRgno());
+			getCheckFinAccountResponseDto = nhApi.checkOpenFinAccountDirect(getFinAccountResponseDto.getRgno());
 		} catch (Exception e) {
 			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
 		}
