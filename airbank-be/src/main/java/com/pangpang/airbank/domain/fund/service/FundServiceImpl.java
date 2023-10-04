@@ -74,8 +74,8 @@ public class FundServiceImpl implements FundService {
 	private final FundManagementRepository fundManagementRepository;
 	private final AccountHistoryRepository accountHistoryRepository;
 	private final MemberService memberService;
-	private final ConfiscationConstantProvider confiscationConstantProvider;
 	private final NotificationService notificationService;
+	private final ConfiscationConstantProvider confiscationConstantProvider;
 
 	/**
 	 *  현재 세금 현황 조회
@@ -186,6 +186,21 @@ public class FundServiceImpl implements FundService {
 	}
 
 	/**
+	 * 지난 달 미납 세금 확인 기능, Cron
+	 */
+	@Override
+	@Transactional
+	public void checkNoPaymentTaxes() {
+		// 지난 달 미납한 세금
+		LocalDate preMonthDate = LocalDate.now().minusMonths(1);
+		List<Tax> taxList = taxRepository.findAllByActivatedFalseAndExpiredAt_MonthValueAndExpiredAt_Year(preMonthDate);
+
+		for (Tax tax : taxList) {
+			createWarningTax(tax);
+		}
+	}
+
+	/**
 	 * 밀린 세금 금액
 	 *
 	 * @param groupId
@@ -276,6 +291,21 @@ public class FundServiceImpl implements FundService {
 			AccountType.MAIN_ACCOUNT).orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
 		transferService.transfer(TransferRequestDto.of(senderAccount, receiverAccount,
 			refundAmount, TransactionType.TAX_REFUND));
+	}
+
+	/**
+	 * 미납 세금 주인의 신용점수 하락 및 알림 발송
+	 * @param tax
+	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = RuntimeException.class)
+	public void createWarningTax(Tax tax) {
+		// 신용 점수 하락
+		memberService.updateCreditScoreByRate(tax.getGroup().getChild().getId(), -0.5);
+
+		// 세금 미납 알림
+		notificationService.saveNotification(
+			CreateNotificationDto.of("지난 달 세금 미납으로 신용점수가 하락했습니다."
+				, tax.getGroup().getChild(), NotificationType.TAX));
 	}
 
 	/**

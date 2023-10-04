@@ -310,4 +310,18 @@ public class FundController {
 				.code(HttpStatus.OK.value())
 				.build());
 	}
+
+	/**
+	 * 세금 미납 확인 cron
+	 * 저번 달 세금 미납시, 신용점수 하락 및 알림
+	 * @return ResponseEntity<EnvelopeResponse < Void>>
+	 */
+	@GetMapping("/tax-pay-check-cron")
+	public ResponseEntity<EnvelopeResponse<Void>> checkNoPaymentTaxes() {
+		fundService.checkNoPaymentTaxes();
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<Void>builder()
+				.code(HttpStatus.OK.value())
+				.build());
+	}
 }

@@ -15,8 +15,15 @@ public interface TaxRepository extends JpaRepository<Tax, Long> {
 	@Query("SELECT sum(amount) FROM tax WHERE group.id=:groupId AND activated=false AND expiredAt<:expiredAt")
 	Long findOverAmountsByGroupIdAndActivatedFalseAndExpiredAtLessThan(Long groupId, LocalDate expiredAt);
 
-	// 이번 달 납부 안한 세금
+	// 한 그룹이 이번 달 납부 안한 세금
 	Optional<Tax> findByGroupIdAndActivatedFalseAndExpiredAtGreaterThanEqual(Long groupId, LocalDate expiredAt);
+
+	// 이번 달 납부 안한 모든 세금
+	@Query("""
+			SELECT t FROM tax t JOIN FETCH t.group g JOIN FETCH g.child
+			WHERE t.activated=false AND YEAR(t.expiredAt)=YEAR(:expiredAt) AND MONTH(t.expiredAt)=MONTH(:expiredAt)
+		""")
+	List<Tax> findAllByActivatedFalseAndExpiredAt_MonthValueAndExpiredAt_Year(LocalDate expiredAt);
 
 	List<Tax> findAllByGroupAndActivatedFalse(Group group);
 
