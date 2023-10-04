@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pangpang.airbank.domain.account.service.AccountService;
 import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
 import com.pangpang.airbank.domain.auth.dto.PostLoginRequestDto;
 import com.pangpang.airbank.domain.group.domain.Group;
@@ -25,6 +26,7 @@ import com.pangpang.airbank.global.error.exception.GroupException;
 import com.pangpang.airbank.global.error.exception.MemberException;
 import com.pangpang.airbank.global.error.info.GroupErrorInfo;
 import com.pangpang.airbank.global.error.info.MemberErrorInfo;
+import com.pangpang.airbank.global.meta.domain.AccountType;
 import com.pangpang.airbank.global.meta.domain.CreditRating;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
 
@@ -36,6 +38,7 @@ public class MemberServiceImpl implements MemberService {
 	private final MemberRepository memberRepository;
 	private final GroupRepository groupRepository;
 	private final CreditHistoryRepository creditHistoryRepository;
+	private final AccountService accountService;
 
 	/**
 	 *  사용자 조회
@@ -57,7 +60,7 @@ public class MemberServiceImpl implements MemberService {
 	 * @return LoginMemberResponseDto
 	 * @see MemberRepository
 	 */
-	@Transactional(readOnly = true)
+	@Transactional
 	@Override
 	public LoginMemberResponseDto getMemberByOauthIdentifier(PostLoginRequestDto postLoginRequestDto) {
 		Optional<Member> optionalMember = memberRepository.findByOauthIdentifier(
@@ -76,6 +79,7 @@ public class MemberServiceImpl implements MemberService {
 	 * @return LoginMemberResponseDto
 	 * @see MemberRepository
 	 * @see CreditHistoryRepository
+	 * @see AccountService
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
@@ -84,6 +88,8 @@ public class MemberServiceImpl implements MemberService {
 
 		// 신용점수 생성
 		creditHistoryRepository.save(CreditHistory.from(member));
+		// 메인 계좌 생성
+		accountService.saveVirtualAccount(member.getId(), AccountType.MAIN_ACCOUNT);
 
 		return LoginMemberResponseDto.from(member);
 	}

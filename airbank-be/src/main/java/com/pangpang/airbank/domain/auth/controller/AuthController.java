@@ -19,6 +19,7 @@ import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -87,7 +88,7 @@ public class AuthController {
 	})
 	@GetMapping("/logout")
 	public ResponseEntity<EnvelopeResponse<GetLogoutResponseDto>> logout(HttpServletRequest request,
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
 		request.getSession().invalidate();
 
 		return ResponseEntity.ok()

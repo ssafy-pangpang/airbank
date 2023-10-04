@@ -22,6 +22,7 @@ import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -56,7 +57,7 @@ public class MemberController {
 	})
 	@GetMapping()
 	public ResponseEntity<EnvelopeResponse<GetMemberResponseDto>> getMember(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
 
 		return ResponseEntity.ok()
 			.body(EnvelopeResponse.<GetMemberResponseDto>builder()
@@ -84,7 +85,7 @@ public class MemberController {
 	})
 	@PatchMapping()
 	public ResponseEntity<EnvelopeResponse<PatchMemberResponseDto>> updateMember(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestBody PatchMemberRequestDto patchMemberRequestDto) {
 
 		return ResponseEntity.ok()
@@ -114,7 +115,7 @@ public class MemberController {
 	@CheckGroup
 	@GetMapping("/credit")
 	public ResponseEntity<EnvelopeResponse<GetCreditResponseDto>> getCredit(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestParam("group_id") Long groupId) {
 
 		return ResponseEntity.ok()
@@ -134,7 +135,7 @@ public class MemberController {
 	 */
 	@PostMapping("/credit")
 	public ResponseEntity<EnvelopeResponse<Void>> updateCreditScore(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestParam("points") Integer points) {
 
 		memberService.updateCreditScoreByPoints(authenticatedMemberArgument.getMemberId(), points);
@@ -164,7 +165,7 @@ public class MemberController {
 	@CheckGroup
 	@GetMapping("/credit-history")
 	public ResponseEntity<EnvelopeResponse<GetCreditHistoryResponseDto>> getCreditHistory(
-		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,
 		@RequestParam("group_id") Long groupId) {
 
 		return ResponseEntity.ok()
