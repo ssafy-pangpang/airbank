@@ -253,4 +253,19 @@ public class FundController {
 					postTransferConfiscationRequestDto))
 				.build());
 	}
+
+	/**
+	 *  신용등급이 7등급 이하인 경우 압류하는 메소드, Cron
+	 *
+	 * @see FundService
+	 */
+	@GetMapping("/confiscation-cron")
+	public ResponseEntity<EnvelopeResponse<Void>> confiscateLoan() {
+		fundService.confiscateLoanByCron();
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(EnvelopeResponse.<Void>builder()
+				.code(HttpStatus.OK.value())
+				.build());
+	}
 }

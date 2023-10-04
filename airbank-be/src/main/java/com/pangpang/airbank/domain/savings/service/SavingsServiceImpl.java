@@ -226,8 +226,9 @@ public class SavingsServiceImpl implements SavingsService {
 		// 신용 점수 증가
 		try {
 			memberService.updateCreditScoreByRate(memberId, 0.1);
-		} catch (MemberException e) {
-			log.info(e.getMessage());
+			log.info(memberId + "신용 점수 수정 SUCCESS");
+		} catch (RuntimeException e) {
+			log.info(memberId + "신용 점수 수정 FAIL");
 		}
 
 		return CommonAmountResponseDto.from(response.getAmount());

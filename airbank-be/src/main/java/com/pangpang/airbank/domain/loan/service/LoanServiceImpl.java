@@ -139,8 +139,9 @@ public class LoanServiceImpl implements LoanService {
 		// 신용 점수 감소
 		try {
 			memberService.updateCreditScoreByRate(memberId, -0.3);
-		} catch (MemberException e) {
-			log.info(e.getMessage());
+			log.info(memberId + "신용 점수 수정 SUCCESS");
+		} catch (RuntimeException e) {
+			log.info(memberId + "신용 점수 수정 FAIL");
 		}
 
 		return CommonAmountResponseDto.from(response.getAmount());

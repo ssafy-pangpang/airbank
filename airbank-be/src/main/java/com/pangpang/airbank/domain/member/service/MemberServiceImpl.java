@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pangpang.airbank.domain.auth.dto.GetLogoutResponseDto;
 import com.pangpang.airbank.domain.auth.dto.PostLoginRequestDto;
-import com.pangpang.airbank.domain.fund.service.ConfiscationConstantProvider;
-import com.pangpang.airbank.domain.fund.service.FundService;
 import com.pangpang.airbank.domain.group.domain.Group;
 import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.domain.CreditHistory;
