@@ -15,4 +15,11 @@ import lombok.RequiredArgsConstructor;
 @JsonNaming(value = PropertyNamingStrategy.PascalCaseStrategy.class)
 public class PostDepositTransferResponseDto {
 	private CommonHeaderDto header;
+
+	@Override
+	public String toString() {
+		return "PostDepositTransferResponseDto{" +
+			"header=" + header +
+			'}';
+	}
 }

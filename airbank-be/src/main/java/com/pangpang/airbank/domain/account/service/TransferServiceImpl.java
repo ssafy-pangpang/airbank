@@ -22,9 +22,11 @@ import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.info.AccountErrorInfo;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TransferServiceImpl implements TransferService {
 	private static final String NORMAL_PROCESSING_MESSAGE = "정상처리 되었습니다.";
 
@@ -43,7 +45,7 @@ public class TransferServiceImpl implements TransferService {
 		UUID transactionIdentifier = accountHistoryService.saveWithdrawalHistory(
 			SaveWithdrawalHistoryRequestDto.from(transferRequestDto));
 
-		PostWithdrawalTransferResponseDto postWithdrawalTransferResponseDto;
+		PostWithdrawalTransferResponseDto postWithdrawalTransferResponseDto = null;
 
 		try {
 			postWithdrawalTransferResponseDto = nhApi.withdrawalTransfer(
@@ -53,6 +55,7 @@ public class TransferServiceImpl implements TransferService {
 		}
 
 		if (!postWithdrawalTransferResponseDto.getHeader().getRsms().equals(NORMAL_PROCESSING_MESSAGE)) {
+			log.error("widthdraw " + postWithdrawalTransferResponseDto);
 			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
 		}
 
@@ -63,7 +66,7 @@ public class TransferServiceImpl implements TransferService {
 		UUID transactionIdentifier = accountHistoryService.saveDepositHistory(
 			SaveDepositHistoryRequestDto.from(transferRequestDto));
 
-		PostDepositTransferResponseDto postDepositTransferResponseDto;
+		PostDepositTransferResponseDto postDepositTransferResponseDto = null;
 
 		try {
 			postDepositTransferResponseDto = nhApi.depositTransfer(
@@ -73,6 +76,7 @@ public class TransferServiceImpl implements TransferService {
 		}
 
 		if (!postDepositTransferResponseDto.getHeader().getRsms().equals(NORMAL_PROCESSING_MESSAGE)) {
+			log.error("widthdraw " + postDepositTransferResponseDto);
 			throw new AccountException(AccountErrorInfo.ACCOUNT_NH_SERVER_ERROR);
 		}
 

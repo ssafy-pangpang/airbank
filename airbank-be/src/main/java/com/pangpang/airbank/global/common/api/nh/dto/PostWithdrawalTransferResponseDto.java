@@ -17,4 +17,13 @@ public class PostWithdrawalTransferResponseDto {
 	private CommonHeaderDto header;
 	private String finAcno;
 	private String rgsnYmd;
+
+	@Override
+	public String toString() {
+		return "PostWithdrawalTransferResponseDto{" +
+			"header=" + header +
+			", finAcno='" + finAcno + '\'' +
+			", rgsnYmd='" + rgsnYmd + '\'' +
+			'}';
+	}
 }
