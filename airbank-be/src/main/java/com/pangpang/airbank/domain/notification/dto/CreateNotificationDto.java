@@ -30,11 +30,20 @@ public class CreateNotificationDto {
 		}
 
 		return CreateNotificationDto.builder()
-			.content(String.format("%s님에게 %s %s을 %s.", sender.getName(), transferRequestDto.getType().getMsgName(),
+			.content(String.format("%s님에게 %s %s원을 %s.", sender.getName(), transferRequestDto.getType().getMsgName(),
 				transferRequestDto.getAmount().toString().replaceAll("\\B(?=(\\d{3})+(?!\\d))", ","), msgType))
 			.senderId(sender.getId())
 			.receiverId(receiver.getId())
 			.notificationType(NotificationType.ofName(transferRequestDto.getType().getName()))
+			.build();
+	}
+
+	public static CreateNotificationDto of(String content, Member receiver, NotificationType notificationType) {
+		return CreateNotificationDto.builder()
+			.content(content)
+			.senderId(null)
+			.receiverId(receiver.getId())
+			.notificationType(notificationType)
 			.build();
 	}
 }

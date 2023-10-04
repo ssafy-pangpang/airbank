@@ -129,4 +129,20 @@ public class LoanController {
 				.data(loanService.repaidLoan(authenticatedMemberArgument.getMemberId(), postCommonLoanRequestDto))
 				.build());
 	}
+
+	/**
+	 *  이자 생성 cron
+	 *
+	 * @see LoanService
+	 */
+	@GetMapping("/interest-cron")
+	public ResponseEntity<EnvelopeResponse<Void>> createInterest() {
+		loanService.createInterestByCron();
+
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<Void>builder()
+				.code(HttpStatus.OK.value())
+				.data(null)
+				.build());
+	}
 }

@@ -1,6 +1,7 @@
 package com.pangpang.airbank.domain.loan.service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import com.pangpang.airbank.domain.account.service.TransferService;
 import com.pangpang.airbank.domain.fund.domain.FundManagement;
 import com.pangpang.airbank.domain.fund.domain.Interest;
 import com.pangpang.airbank.domain.fund.dto.GetInterestResponseDto;
+import com.pangpang.airbank.domain.fund.repository.ConfiscationRepository;
 import com.pangpang.airbank.domain.fund.repository.FundManagementRepository;
 import com.pangpang.airbank.domain.fund.repository.InterestRepository;
 import com.pangpang.airbank.domain.fund.service.FundService;
@@ -25,6 +27,8 @@ import com.pangpang.airbank.domain.loan.dto.PostRepaidLoanResponseDto;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.domain.member.service.MemberService;
+import com.pangpang.airbank.domain.notification.dto.CreateNotificationDto;
+import com.pangpang.airbank.domain.notification.service.NotificationService;
 import com.pangpang.airbank.global.common.response.CommonAmountResponseDto;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.FundException;
@@ -38,7 +42,9 @@ import com.pangpang.airbank.global.error.info.LoanErrorInfo;
 import com.pangpang.airbank.global.error.info.MemberErrorInfo;
 import com.pangpang.airbank.global.meta.domain.AccountType;
 import com.pangpang.airbank.global.meta.domain.CreditRating;
+import com.pangpang.airbank.global.meta.domain.InterestRate;
 import com.pangpang.airbank.global.meta.domain.MemberRole;
+import com.pangpang.airbank.global.meta.domain.NotificationType;
 import com.pangpang.airbank.global.meta.domain.TransactionType;
 
 import lombok.RequiredArgsConstructor;
@@ -57,6 +63,8 @@ public class LoanServiceImpl implements LoanService {
 	private final FundService fundService;
 	private final InterestRepository interestRepository;
 	private final MemberService memberService;
+	private final ConfiscationRepository confiscationRepository;
+	private final NotificationService notificationService;
 
 	/**
 	 *  땡겨쓰기(한도, 땡겨쓴 금액)를 조회하는 메소드, 부모와 자녀가 조회 가능하다.
@@ -195,6 +203,48 @@ public class LoanServiceImpl implements LoanService {
 		fundManagement.minusLoanAmount(response.getAmount());
 
 		return PostRepaidLoanResponseDto.of(transferRequestDto.getAmount(), fundManagement.getLoanAmount());
+	}
+
+	/**
+	 *  이자를 생성하는 메소드, Cron
+	 *
+	 * @see InterestRepository
+	 * @see ConfiscationRepository
+	 * @see FundManagementRepository
+	 * @see NotificationService
+	 */
+	@Transactional
+	@Override
+	public void createInterestByCron() {
+		// TODO: 매일 오전 00시에 CRON 동작
+		LocalDate today = LocalDate.now();
+		List<Interest> interests = interestRepository.findAllByBilledAtAndActivatedFalse(today);
+		for (Interest interest : interests) {
+			Group group = interest.getGroup();
+			Member child = group.getChild();
+
+			Optional<Interest> oldInterest = interestRepository.findByGroupAndActivatedFalseAndBilledAtGreaterThan(
+				group, today);
+
+			if (oldInterest.isEmpty()) {
+				interestRepository.save(Interest.of(group));
+			}
+
+			// 현재 압류 중인지 확인
+			if (confiscationRepository.existsByGroupIdAndActivatedTrue(group.getId())) {
+				continue;
+			}
+
+			FundManagement fundManagement = fundManagementRepository.findByGroup(group)
+				.orElseThrow(() -> new FundException(FundErrorInfo.NOT_FOUND_FUND_MANAGEMENT_BY_GROUP));
+
+			interest.updateAmount(fundManagement.getLoanAmount(),
+				InterestRate.ofRating(CreditRating.getCreditRating(child.getCreditScore()).getRating()));
+			interest.updateActivated(true);
+
+			notificationService.saveNotification(
+				CreateNotificationDto.of("이자가 발생했습니다.", child, NotificationType.INTEREST));
+		}
 	}
 
 }
