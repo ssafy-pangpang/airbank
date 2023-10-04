@@ -17,6 +17,7 @@ public class PartnerElement {
 	private Long groupId;
 	private String name;
 	private String imageUrl;
+	private Integer creditScore;
 
 	public static PartnerElement of(Group group, Member partnerMember) {
 		return PartnerElement.builder()
@@ -24,6 +25,7 @@ public class PartnerElement {
 			.groupId(group.getId())
 			.name(partnerMember.getName())
 			.imageUrl(partnerMember.getImageUrl())
+			.creditScore(partnerMember.getCreditScore())
 			.build();
 	}
 }

@@ -24,6 +24,13 @@ public interface SavingsRepository extends JpaRepository<Savings, Long> {
 
 	@Query("select s from savings s "
 		+ "join fetch s.group g "
+		+ "join fetch g.parent "
+		+ "join fetch g.child "
+		+ "where g.id = :id and s.status = :status")
+	Optional<Savings> findByIdAndStatusEqualsWithGroupAndParentAndChild(Long id, @Param("status") SavingsStatus status);
+
+	@Query("select s from savings s "
+		+ "join fetch s.group g "
 		+ "join fetch g.child "
 		+ "where s.status = :status")
 	List<Savings> findAllByStatusEqualsWithGroupAndChild(@Param("status") SavingsStatus status);

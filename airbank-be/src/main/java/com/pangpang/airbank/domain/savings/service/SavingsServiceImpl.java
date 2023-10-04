@@ -17,6 +17,8 @@ import com.pangpang.airbank.domain.group.repository.GroupRepository;
 import com.pangpang.airbank.domain.member.domain.Member;
 import com.pangpang.airbank.domain.member.repository.MemberRepository;
 import com.pangpang.airbank.domain.member.service.MemberService;
+import com.pangpang.airbank.domain.notification.dto.CreateNotificationDto;
+import com.pangpang.airbank.domain.notification.service.NotificationService;
 import com.pangpang.airbank.domain.savings.domain.Savings;
 import com.pangpang.airbank.domain.savings.domain.SavingsItem;
 import com.pangpang.airbank.domain.savings.dto.GetCurrentSavingsResponseDto;
@@ -32,7 +34,6 @@ import com.pangpang.airbank.global.common.response.CommonAmountResponseDto;
 import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.error.exception.AccountException;
 import com.pangpang.airbank.global.error.exception.GroupException;
-import com.pangpang.airbank.global.error.exception.MemberException;
 import com.pangpang.airbank.global.error.exception.SavingsException;
 import com.pangpang.airbank.global.error.info.AccountErrorInfo;
 import com.pangpang.airbank.global.error.info.GroupErrorInfo;
@@ -58,6 +59,7 @@ public class SavingsServiceImpl implements SavingsService {
 	private final TransferService transferService;
 	private final MemberService memberService;
 	private final SavingsConstantProvider savingsConstantProvider;
+	private final NotificationService notificationService;
 
 	/**
 	 *  현재 진행중인 티끌모으기 정보를 조회하는 메소드
@@ -96,7 +98,7 @@ public class SavingsServiceImpl implements SavingsService {
 			throw new SavingsException(SavingsErrorInfo.ENROLL_SAVINGS_PERMISSION_DENIED);
 		}
 
-		Group group = groupRepository.findByChildIdAndActivatedTrue(memberId)
+		Group group = groupRepository.findByChildIdAndActivatedTrueWithParentAndChild(memberId)
 			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
 
 		if (savingsRepository.existsByGroupIdAndStatusEquals(group.getId(), SavingsStatus.PENDING)) {
@@ -112,6 +114,14 @@ public class SavingsServiceImpl implements SavingsService {
 
 		savingsRepository.save(savings);
 		savingsItemRepository.save(savingsItem);
+
+		//알림
+		Member child = group.getChild();
+		Member parent = group.getParent();
+
+		notificationService.saveNotification(
+			CreateNotificationDto.ofSavingsConfirm(child, parent, group.getId(), savingsItem));
+
 		return CommonIdResponseDto.from(savings.getId());
 	}
 
@@ -142,6 +152,16 @@ public class SavingsServiceImpl implements SavingsService {
 
 		// 티끌모으기 가상 계좌 생성
 		accountService.saveVirtualAccount(group.getChild().getId(), AccountType.SAVINGS_ACCOUNT);
+
+		// 알림
+		Member child = group.getChild();
+		Member parent = group.getParent();
+		SavingsItem savingsItem = savingsItemRepository.findBySavings(savings)
+			.orElseThrow(() -> new SavingsException(SavingsErrorInfo.NOT_FOUND_SAVINGS_ITEM));
+
+		notificationService.saveNotification(
+			CreateNotificationDto.ofSavings(child, parent, savingsItem, patchConfirmSavingsRequestDto.getIsAccept()));
+
 		return PatchCommonSavingsResponseDto.from(savings);
 	}
 
@@ -176,14 +196,16 @@ public class SavingsServiceImpl implements SavingsService {
 		savings.updateStatus(SavingsStatus.FAIL);
 
 		// 티끌모으기 잔액 자녀 계좌로 송금
-		Account mainAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.MAIN_ACCOUNT)
-			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
-		Account savingsAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.SAVINGS_ACCOUNT)
-			.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_SAVINGS_ACCOUNT));
+		if (savings.getTotalAmount() > 0) {
+			Account mainAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.MAIN_ACCOUNT)
+				.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_ACCOUNT));
+			Account savingsAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.SAVINGS_ACCOUNT)
+				.orElseThrow(() -> new AccountException(AccountErrorInfo.NOT_FOUND_SAVINGS_ACCOUNT));
 
-		TransferRequestDto transferRequestDto = TransferRequestDto.of(savingsAccount, mainAccount,
-			savings.getTotalAmount(), TransactionType.SAVINGS);
-		TransferResponseDto response = transferService.transfer(transferRequestDto);
+			TransferRequestDto transferRequestDto = TransferRequestDto.of(savingsAccount, mainAccount,
+				savings.getTotalAmount(), TransactionType.SAVINGS);
+			TransferResponseDto response = transferService.transfer(transferRequestDto);
+		}
 
 		return PatchCommonSavingsResponseDto.from(savings);
 	}
@@ -208,8 +230,8 @@ public class SavingsServiceImpl implements SavingsService {
 			throw new SavingsException(SavingsErrorInfo.TRANSFER_SAVINGS_PERMISSION_DENIED);
 		}
 
-		Savings savings = savingsRepository.findByIdAndStatusEquals(postTransferSavingsRequestDto.getId(),
-				SavingsStatus.PROCEEDING)
+		Savings savings = savingsRepository.findByIdAndStatusEqualsWithGroupAndParentAndChild(
+				postTransferSavingsRequestDto.getId(), SavingsStatus.PROCEEDING)
 			.orElseThrow(() -> new SavingsException(SavingsErrorInfo.NOT_FOUND_SAVINGS_IN_PROCEEDING));
 
 		Account mainAccount = accountRepository.findByMemberIdAndType(memberId, AccountType.MAIN_ACCOUNT)
@@ -227,6 +249,21 @@ public class SavingsServiceImpl implements SavingsService {
 		TransferResponseDto response = transferService.transfer(transferRequestDto);
 
 		savings.transferSavings(amount);
+
+		// 알림(티끌 모으기 완료 시)
+		if (savings.getTotalAmount().equals(savings.getMyAmount()) && savings.getMonth()
+			.equals(savings.getPaymentCount())) {
+
+			Group group = savings.getGroup();
+			Member child = group.getChild();
+			Member parent = group.getParent();
+
+			SavingsItem savingsItem = savingsItemRepository.findBySavings(savings)
+				.orElseThrow(() -> new SavingsException(SavingsErrorInfo.NOT_FOUND_SAVINGS_ITEM));
+
+			notificationService.saveNotification(
+				CreateNotificationDto.ofSavingsRewardConfirm(child, parent, savingsItem));
+		}
 
 		// 신용 점수 증가
 		try {

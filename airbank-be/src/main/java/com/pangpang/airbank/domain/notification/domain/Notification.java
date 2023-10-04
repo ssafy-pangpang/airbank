@@ -25,6 +25,10 @@ public class Notification {
 
 	private Long receiverId;
 
+	private Long groupId;
+
+	private Long savingsId;
+
 	@Convert(converter = NotificationTypeConverter.class)
 	private NotificationType notificationType;
 
@@ -39,6 +43,8 @@ public class Notification {
 			.content(createNotificationDto.getContent())
 			.senderId(createNotificationDto.getSenderId())
 			.receiverId(createNotificationDto.getReceiverId())
+			.groupId(createNotificationDto.getGroupId())
+			.savingsId(createNotificationDto.getSavingsId())
 			.notificationType(createNotificationDto.getNotificationType())
 			.createdAt(LocalDateTime.now())
 			.updatedAt(LocalDateTime.now())
