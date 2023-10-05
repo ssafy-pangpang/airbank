@@ -81,6 +81,22 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	/**
+	 *  자녀가 부모의 요청을 조회하는 메소드
+	 *
+	 * @param memberId Long
+	 * @return CommonIdResponseDto
+	 * @see GroupRepository
+	 */
+	@Transactional(readOnly = true)
+	@Override
+	public CommonIdResponseDto getEnrollmentChild(Long memberId) {
+		Group group = groupRepository.findByChildIdAndActivatedFalse(memberId)
+			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_ENROLLMENT_GROUP));
+
+		return CommonIdResponseDto.from(group.getId());
+	}
+
+	/**
 	 *  부모가 자녀를 등록하는 메소드 단, 부모만 등록할 수 있음.
 	 *
 	 * @param memberId Long
