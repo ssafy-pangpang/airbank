@@ -15,6 +15,7 @@ import com.pangpang.airbank.domain.loan.dto.PostRepaidLoanResponseDto;
 import com.pangpang.airbank.domain.loan.service.LoanService;
 import com.pangpang.airbank.global.aop.CheckGroup;
 import com.pangpang.airbank.global.common.response.CommonAmountResponseDto;
+import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
@@ -135,6 +136,12 @@ public class LoanController {
 	 *
 	 * @see LoanService
 	 */
+	@Operation(summary = "이자 생성 Cron", description = "이자 생성 Cron")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "이자 생성 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
 	@GetMapping("/interest-cron")
 	public ResponseEntity<EnvelopeResponse<Void>> createInterest() {
 		loanService.createInterestByCron();
