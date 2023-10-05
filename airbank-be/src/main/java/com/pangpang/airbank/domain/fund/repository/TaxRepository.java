@@ -27,6 +27,13 @@ public interface TaxRepository extends JpaRepository<Tax, Long> {
 
 	List<Tax> findAllByGroupAndActivatedFalse(Group group);
 
+	// 이번 달 세금 부과 여부
+	@Query("""
+			SELECT count(t)>0 FROM tax t
+			WHERE t.group.id=:groupId AND YEAR(t.expiredAt)=YEAR(:expiredAt) AND MONTH(t.expiredAt)=MONTH(:expiredAt)
+		""")
+	Boolean existsByGroupIdAndExpiredAt_YearEqualAndExpiredAt_MonthEqual(Long groupId, LocalDate expiredAt);
+
 	// 저번 달 납부 안한 세금
 	@Query("""
 		 	SELECT t FROM tax t

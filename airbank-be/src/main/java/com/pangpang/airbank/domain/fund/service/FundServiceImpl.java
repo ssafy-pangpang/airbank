@@ -236,7 +236,9 @@ public class FundServiceImpl implements FundService {
 			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_CHILD));
 
 		// 이미 세금이 부과된 경우
-		if (curMonthTax(group.getId(), expiredDate).getAmount() != null) {
+		Boolean hasTax = taxRepository.existsByGroupIdAndExpiredAt_YearEqualAndExpiredAt_MonthEqual(group.getId(),
+			expiredDate);
+		if (hasTax) {
 			return;
 		}
 
@@ -250,6 +252,13 @@ public class FundServiceImpl implements FundService {
 		}
 
 		taxRepository.save(Tax.of(taxAmount, expiredDate, group));
+
+		// 세금 부과 알림
+		notificationService.saveNotification(
+			CreateNotificationDto.of(
+				String.format("세금 %s원이 부과되었습니다.",
+					taxAmount.toString().replaceAll("\\B(?=(\\d{3})+(?!\\d))", ",")),
+				group.getChild(), NotificationType.TAX));
 	}
 
 	/**
