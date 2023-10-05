@@ -247,7 +247,9 @@ public class LoanServiceImpl implements LoanService {
 			interest.updateActivated(true);
 
 			notificationService.saveNotification(
-				CreateNotificationDto.of("이자가 발생했습니다.", child, NotificationType.INTEREST));
+				CreateNotificationDto.of(String.format("이자 %s원이 발생했습니다.",
+						interest.getAmount().toString().replaceAll("\\B(?=(\\d{3})+(?!\\d))", ",")),
+					child, NotificationType.INTEREST));
 		}
 	}
 
