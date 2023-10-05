@@ -105,7 +105,8 @@ public class LoanServiceImpl implements LoanService {
 			.orElseThrow(() -> new MemberException(MemberErrorInfo.NOT_FOUND_MEMBER));
 
 		Integer rating = CreditRating.getCreditRating(child.getCreditScore()).getRating();
-		if (rating <= loanConstantProvider.getLoanThreshold()) {
+
+		if (rating > loanConstantProvider.getLoanThreshold()) {
 			throw new LoanException(LoanErrorInfo.CREDIT_SCORE_BELOW_THRESHOLD);
 		}
 

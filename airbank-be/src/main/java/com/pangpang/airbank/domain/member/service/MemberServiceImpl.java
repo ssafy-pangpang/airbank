@@ -206,7 +206,7 @@ public class MemberServiceImpl implements MemberService {
 	 * @see CreditRating
 	 * @see CreditHistoryRepository
 	 */
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional()
 	@Override
 	public void updateCreditScoreByRate(Long childId, Double rate) {
 		if (Double.compare(rate, 0D) == 0) {
