@@ -102,8 +102,14 @@ public class AccountController {
 	 *
 	 * @param authenticatedMemberArgument
 	 * @param accountType
-	 * @return ResponseEntity<EnvelopeResponse<GetAccountHistoryResponseDto>>
+	 * @return ResponseEntity<EnvelopeResponse < GetAccountHistoryResponseDto>>
 	 */
+	@Operation(summary = "거래 내역 조회", description = "사용자가 거래 내역을 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "계좌 내역 조회 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1002", description = "Account 통신에 실패했습니다.", content = @Content),
+	})
 	@GetMapping("/history")
 	public ResponseEntity<EnvelopeResponse<GetAccountHistoryResponseDto>> inquireAccountHistory(
 		@Authentication AuthenticatedMemberArgument authenticatedMemberArgument,

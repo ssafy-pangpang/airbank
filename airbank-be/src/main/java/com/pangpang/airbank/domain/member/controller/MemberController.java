@@ -17,6 +17,7 @@ import com.pangpang.airbank.domain.member.dto.PatchMemberRequestDto;
 import com.pangpang.airbank.domain.member.dto.PatchMemberResponseDto;
 import com.pangpang.airbank.domain.member.service.MemberService;
 import com.pangpang.airbank.global.aop.CheckGroup;
+import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
@@ -126,13 +127,19 @@ public class MemberController {
 	}
 
 	/**
-	 *  신용점수 수정 test
+	 *  신용점수 수정 , Cron
 	 *
 	 * @param authenticatedMemberArgument AuthenticatedMemberArgument
 	 * @param points Integer
 	 * @return ResponseEntity<EnvelopeResponse < Void>>
 	 * @see MemberService
 	 */
+	@Operation(summary = "신용점수 수정 Cron", description = "신용점수 수정 Cron")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "신용점수 수정 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
 	@PostMapping("/credit")
 	public ResponseEntity<EnvelopeResponse<Void>> updateCreditScore(
 		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument,

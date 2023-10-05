@@ -22,6 +22,7 @@ import com.pangpang.airbank.domain.fund.dto.PostTransferTaxRequestDto;
 import com.pangpang.airbank.domain.fund.dto.PostTransferTaxResponseDto;
 import com.pangpang.airbank.domain.fund.service.FundService;
 import com.pangpang.airbank.global.aop.CheckGroup;
+import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 import com.pangpang.airbank.global.common.response.EnvelopeResponse;
 import com.pangpang.airbank.global.resolver.Authentication;
 import com.pangpang.airbank.global.resolver.dto.AuthenticatedMemberArgument;
@@ -173,6 +174,16 @@ public class FundController {
 	 * @param groupId
 	 * @return ResponseEntity<EnvelopeResponse < PostTransferBonusResponseDto>>
 	 */
+	@Operation(summary = "보너스 송금", description = "보너스를 송금합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "보너스 송금 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1204", description = "송금된 금액이 지정 금액과 다릅니다.", content = @Content),
+		@ApiResponse(responseCode = "1205", description = "송금될 금액이 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
 	@CheckGroup
 	@PostMapping("/bonus")
 	public ResponseEntity<EnvelopeResponse<PostTransferBonusResponseDto>> transferBonus(
@@ -259,6 +270,11 @@ public class FundController {
 	 *
 	 * @see FundService
 	 */
+	@Operation(summary = "신용등급이 7등급 이하인 경우 압류하는 메소드 Cron", description = "신용등급이 7등급 이하인 경우 압류하는 메소드 Cron")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "신용등급이 7등급 이하인 경우 압류하는 메소드 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+	})
 	@GetMapping("/confiscation-cron")
 	public ResponseEntity<EnvelopeResponse<Void>> confiscateLoan() {
 		fundService.confiscateLoanByCron();
@@ -274,6 +290,15 @@ public class FundController {
 	 *
 	 * @see FundService
 	 */
+	@Operation(summary = "용돈 자동 이체 Cron", description = "용돈 자동 이체 Cron")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "용돈 자동 이체 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1205", description = "송금될 금액이 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
 	@GetMapping("/allowance-cron")
 	public ResponseEntity<EnvelopeResponse<Void>> transferAllowance() {
 		fundService.transferAllowanceByCron();
@@ -288,6 +313,13 @@ public class FundController {
 	 * 저번 달 기준으로 세금 생성하고 이미 생성된 세금 있으면 생성 안됨
 	 * @return ResponseEntity<EnvelopeResponse < Void>>
 	 */
+	@Operation(summary = "세금 생성 Cron", description = "세금 생성 Cron")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "세금 생성 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
 	@GetMapping("/tax-cron")
 	public ResponseEntity<EnvelopeResponse<Void>> createTax() {
 		fundService.createTaxes();
@@ -302,6 +334,15 @@ public class FundController {
 	 * 저번 달 세금 납부 시, 신용등급에 따라 환급
 	 * @return ResponseEntity<EnvelopeResponse < Void>>
 	 */
+	@Operation(summary = "세금 환급 Cron", description = "세금 환급 Cron")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "세금 생성 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1000", description = "NH API 서버와의 통신에 실패했습니다.", content = @Content),
+		@ApiResponse(responseCode = "1004", description = "등록된 계좌가 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1205", description = "송금될 금액이 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
 	@GetMapping("/tax-refund-cron")
 	public ResponseEntity<EnvelopeResponse<Void>> transferRefundTax() {
 		fundService.refundTaxes();
@@ -316,6 +357,12 @@ public class FundController {
 	 * 저번 달 세금 미납시, 신용점수 하락 및 알림
 	 * @return ResponseEntity<EnvelopeResponse < Void>>
 	 */
+	@Operation(summary = "세금 미납 확인 Cron", description = "세금 미납 확인 Cron")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "세금 미납 확인 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
 	@GetMapping("/tax-pay-check-cron")
 	public ResponseEntity<EnvelopeResponse<Void>> checkNoPaymentTaxes() {
 		fundService.checkNoPaymentTaxes();
@@ -330,6 +377,12 @@ public class FundController {
 	 * 저번 달 이자 미납 시, 신용점수 하락 및 알림
 	 * @return ResponseEntity<EnvelopeResponse < Void>>
 	 */
+	@Operation(summary = "이자 미납 확인 Cron", description = "이자 미납 확인 Cron")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "이자 미납 확인 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
 	@GetMapping("/interest-pay-check-cron")
 	public ResponseEntity<EnvelopeResponse<Void>> checkNoPaymentInterests() {
 		fundService.checkNoPaymentInterests();

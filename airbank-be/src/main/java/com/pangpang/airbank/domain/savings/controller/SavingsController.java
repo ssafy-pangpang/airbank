@@ -236,10 +236,16 @@ public class SavingsController {
 	}
 
 	/**
-	 *  티끌모으기 납부 지연 확인, Cron 테스트
+	 *  티끌모으기 납부 지연 확인, Cron
 	 *
 	 * @see SavingsService
 	 */
+	@Operation(summary = "티끌모으기 납부 지연 확인 Cron", description = "티끌모으기 납부 지연 확인 Cron")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "티끌모으기 납부 지연 확인 성공",
+			content = @Content(schema = @Schema(implementation = CommonIdResponseDto.class))),
+		@ApiResponse(responseCode = "1307", description = "그룹을 찾을 수 없습니다.", content = @Content),
+	})
 	@GetMapping("/delay-cron")
 	public ResponseEntity<EnvelopeResponse<Void>> confirmDelaySavings() {
 		savingsService.confirmDelaySavings();
