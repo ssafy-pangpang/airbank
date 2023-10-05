@@ -1,6 +1,7 @@
 package com.pangpang.airbank.domain.savings.service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -72,7 +73,8 @@ public class SavingsServiceImpl implements SavingsService {
 	@Transactional(readOnly = true)
 	@Override
 	public GetCurrentSavingsResponseDto getCurrentSavings(Long groupId) {
-		Savings savings = savingsRepository.findByGroupIdAndStatusEquals(groupId, SavingsStatus.PROCEEDING)
+		Savings savings = savingsRepository.findFirstByGroupIdAndStatusIn(groupId,
+				Arrays.asList(SavingsStatus.PENDING, SavingsStatus.PROCEEDING))
 			.orElseThrow(() -> new SavingsException(SavingsErrorInfo.NOT_FOUND_SAVINGS_IN_PROCEEDING));
 
 		SavingsItem savingsItem = savingsItemRepository.findBySavings(savings)
@@ -145,7 +147,8 @@ public class SavingsServiceImpl implements SavingsService {
 		Group group = groupRepository.findByIdWithChild(groupId)
 			.orElseThrow(() -> new GroupException(GroupErrorInfo.NOT_FOUND_GROUP_BY_ID));
 
-		Savings savings = savingsRepository.findByGroupIdAndStatusEquals(group.getId(), SavingsStatus.PENDING)
+		Savings savings = savingsRepository.findFirstByGroupIdAndStatusIn(group.getId(),
+				Arrays.asList(SavingsStatus.PENDING))
 			.orElseThrow(() -> new SavingsException(SavingsErrorInfo.NOT_FOUND_SAVINGS_IN_PENDING));
 
 		savings.confirmSavings(patchConfirmSavingsRequestDto);
