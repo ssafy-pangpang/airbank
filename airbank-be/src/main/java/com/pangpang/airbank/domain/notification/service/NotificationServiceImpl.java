@@ -49,9 +49,16 @@ public class NotificationServiceImpl implements NotificationService {
 		NotificationGroup notificationGroup = notificationGroupRepository.findById(
 				makeNotificationGroupId(partnerId, memberId))
 			.orElse(notificationGroupRepository.save(NotificationGroup.of(partnerId, memberId)));
+		NotificationGroup notificationMine = notificationGroupRepository.findById(
+				makeNotificationGroupId(memberId, memberId))
+			.orElse(notificationGroupRepository.save(NotificationGroup.of(partnerId, memberId)));
 
 		List<NotificationElement> notificationElements = new ArrayList<>();
 		for (Notification notification : notificationGroup.getNotifications()) {
+			addNotificationElements(notificationElements, notification);
+			activateNotificationActivated(notification);
+		}
+		for (Notification notification : notificationMine.getNotifications()) {
 			addNotificationElements(notificationElements, notification);
 			activateNotificationActivated(notification);
 		}
