@@ -65,6 +65,24 @@ public class GroupController {
 				.build());
 	}
 
+	@Operation(summary = "그룹 요청 조회",
+		description = "자녀가 부모의 요청을 조회하는 메소드")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "그룹 요청 조회 성공",
+			content = @Content(schema = @Schema(implementation = GetPartnersResponseDto.class))),
+		@ApiResponse(responseCode = "1500", description = "사용자를 찾을 수 없습니다.", content = @Content),
+		@ApiResponse(responseCode = "1308", description = "요청중인 그룹을 찾을 수 없습니다.", content = @Content),
+	})
+	@GetMapping("/enroll")
+	public ResponseEntity<EnvelopeResponse<CommonIdResponseDto>> getEnrollmentChild(
+		@Parameter(hidden = true) @Authentication AuthenticatedMemberArgument authenticatedMemberArgument) {
+		return ResponseEntity.ok()
+			.body(EnvelopeResponse.<CommonIdResponseDto>builder()
+				.code(HttpStatus.OK.value())
+				.data(groupService.getEnrollmentChild(authenticatedMemberArgument.getMemberId()))
+				.build());
+	}
+
 	/**
 	 *  자녀 등록
 	 *

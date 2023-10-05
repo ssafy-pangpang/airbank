@@ -18,6 +18,8 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 		+ "where m.parent.id = :parentId and m.activated = true ")
 	List<Group> findAllByParentIdWithChildAsActive(@Param("parentId") Long parentId);
 
+	Optional<Group> findByChildIdAndActivatedFalse(Long childId);
+
 	@Query("select m from group m "
 		+ "join fetch m.parent c "
 		+ "where m.child.id = :childId and m.activated = true ")

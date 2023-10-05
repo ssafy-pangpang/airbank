@@ -11,6 +11,8 @@ import com.pangpang.airbank.global.common.response.CommonIdResponseDto;
 public interface GroupService {
 	GetPartnersResponseDto getPartners(Long memberId);
 
+	CommonIdResponseDto getEnrollmentChild(Long memberId);
+
 	CommonIdResponseDto enrollChild(Long memberId, PostEnrollChildRequestDto postEnrollChildRequestDto);
 
 	CommonIdResponseDto confirmEnrollmentChild(Long memberId, PatchConfirmChildRequestDto patchConfirmChildRequestDto,
