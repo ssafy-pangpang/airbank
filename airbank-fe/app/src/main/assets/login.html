@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+		body {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			flex-direction: column;
+			font-size: 24px; /* Adjust font size as needed */
+		}
+		button {
+			padding: 10px 20px;
+			font-size: 24px; /* Adjust font size as needed */
+			margin-top: 20px;
+		}
+
+	</style>
+</head>
+<body>
+<p id="message">안녕</p>
+<button id="button">웹으로 데이터 보내기</button>
+
+<script>
+	document.getElementById("button").onclick = function() {
+        try {
+            fetchData()
+            window.AIRBANK.kakaoLogin()
+        } catch (error) {
+            console.error("JavaScript error:", error);
+        }
+	}
+	async function fetchData() {
+    try {
+        // 비동기 작업을 수행하는 함수 호출
+        const response = await fetch('https://airbank.ssafy.life/auth/login');
+        // HTTP 응답을 JSON으로 파싱
+        const data = await response.json();
+        // 파싱된 데이터 출력
+        console.log('Data:', data);
+       window.AIRBANK.onData(response)
+      } catch (error) {
+        // 오류 처리
+        console.error('Error:', error);
+      }
+    }
+</script>
+</body>
+</html>
