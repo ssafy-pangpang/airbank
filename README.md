@@ -22,6 +22,33 @@
 ### 티끌 모으기 지원금 송금
 ![티끌모으기_지원금_송금](/uploads/bb6f5002be0bf22f5f1192dbb16ec926/티끌모으기_지원금_송금.gif)
 
+### 메인(자녀)
+![자녀_메인](/uploads/ea253f05df315775cec3f124e5c37a24/자녀_메인.PNG)
+
+
+### 지갑(자녀)
+![자녀_지갑](/uploads/673ddf72f1e0174a786bfb48cb558c1d/자녀_지갑.PNG)
+
+
+### 압류(자녀)
+![자녀_압류](/uploads/de4d9faecc2078b8cff3a52c4e6ebf5c/자녀_압류.PNG)
+
+
+### 거래내역(자녀)
+![자녀_거래내역](/uploads/f2d5cc4f321dd4d89965632ad0c99734/자녀_거래내역.PNG)
+
+
+### 티끌 모으기 요청
+![자녀_티끌모으기_요청](/uploads/70670338cdb827b5965f65af31caa48f/자녀_티끌모으기_요청.gif)
+
+
+### 티끌 모으기 송금
+![자녀_티끌모으기_송금](/uploads/cdfcb6d8c0716c332d0a9ced0b0864ed/자녀_티끌모으기_송금.gif)
+
+### 땡겨쓰기
+![자녀_땡겨쓰기](/uploads/1dc027fd3eeb66f7d2595705ad72f59d/자녀_땡겨쓰기.gif)
+
+
 # 🔧 기술스택 Tech Stack
 ![image](/uploads/12d0dda84552521b3ffe8d53705ee056/image.png)
 ### FE 스택 & 버전
