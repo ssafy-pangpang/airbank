@@ -17,6 +17,9 @@
 ### FE 스택 & 버전
 ```
 Kotlin                    1.9.0
+gradle                    8.0.0
+target Sdk                API 34 -"	UPSIDE_DOWN_CAKE" Android 14.0
+material3                 1.1.1
 ```
 
 ### BE 스택 & 버전
