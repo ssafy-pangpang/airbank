@@ -176,8 +176,7 @@ public class GroupServiceImpl implements GroupService {
 
 			return CommonIdResponseDto.from(group.getId());
 		}
-
-		group.setActivated(false);
+		groupRepository.delete(group);
 
 		// 알림
 		Member child = group.getChild();
