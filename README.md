@@ -6,7 +6,8 @@
 <br><br><br>
 
 # 🔧 기술스택 Tech Stack
-![image](/docs/기술 스택.png)
+<img src="./docs/기술 스택.png"/>
+
 
 ### FE 스택 & 버전
 ```
@@ -58,19 +59,19 @@ jenkins                   2.414.1
 <br>
 
 ### [API명세서](https://airbank.ssafy.life/swagger-ui/index.html)
- ![image](/docs/API 명세서.png)
+ <img src="./docs/API 명세서.png"/>
 
  
  <br><br>
 # 📏 프로젝트 아키텍처 Project Architecture
 
 ## Infrastructure
-![image](/docs/시스템 아키텍처.png)
+<img src="./docs/시스템 아키텍처.png"/>
 
 <br><br>
 
 # 😃 멤버 Members
-![image](/docs/팀원.png)
+<img src="./docs/팀원.png"/>
 
 
 
