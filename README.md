@@ -18,7 +18,8 @@
 ```
 Kotlin                    1.9.0
 gradle                    8.0.0
-target Sdk                API 34 -"	UPSIDE_DOWN_CAKE" Android 14.0
+Android Studio            Giraffe | 2022.3.1
+target Sdk                API 34 | "UPSIDE_DOWN_CAKE" Android 14.0
 material3                 1.1.1
 ```
 
