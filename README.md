@@ -65,12 +65,6 @@ jenkins                   2.414.1
 
 ### 이자 및 세금
 현실적인 금융 시스템을 위해 이자와 세금이 발생할 수 있습니다.
-
-<br>
-
-### [API명세서](https://airbank.ssafy.life/swagger-ui/index.html)
- <img src="./docs/API 명세서.png"/>
-
  
  <br><br>
 # 📏 프로젝트 아키텍처 Project Architecture
@@ -82,7 +76,13 @@ jenkins                   2.414.1
 |MariaDB ERD|MongoDB ERD|
 |---|---|
 |<img src="./docs/airbank_erd.png"/>|<img src="./docs/airbank_mongodb.png"/>|
+
+<br>
+
+## [API 명세서](https://airbank.ssafy.life/swagger-ui/index.html)
+ <img src="./docs/API 명세서.png"/>
 <br><br>
+
 
 # 😃 멤버 Members
 <img src="./docs/팀원.png"/>
