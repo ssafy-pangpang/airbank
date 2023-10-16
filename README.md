@@ -85,7 +85,7 @@ jenkins                   2.414.1
 
 
 # 😃 멤버 Members
-<img src="./docs/팀원.png"/>
+<img src="./docs/AirBank 팀원.png"/>
 
 
 
