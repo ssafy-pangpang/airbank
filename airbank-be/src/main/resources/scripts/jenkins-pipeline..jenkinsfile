@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    stages {
+        stage('Git Clone') {
+            steps {
+                git branch: "dev-be", credentialsId:'gitlab' , url: 'https://lab.ssafy.com/s09-fintech-finance-sub2/S09P22A608.git'
+            }
+        }
+        stage('BE-build') {
+            steps {
+                dir("airbank-be") {
+                    // sh 'ln -f -s /home/jenkins_home/airbank/application-dev.yml ./src/main/resources/application-dev.yml'
+                    sh 'chmod +x gradlew'
+                    sh './gradlew clean bootJar'
+                }
+            }
+        }
+        stage('Be Dockerize'){
+            steps{
+                sh """
+                    pwd
+                    docker stop airbank-be || true
+                    docker rm airbank-be || true
+                    docker rmi airbank-be-image || true
+                    cd airbank-be
+                    docker build -t airbank-be-image .
+                """
+            }
+        }
+        stage('Deploy'){
+            steps{
+                sh """
+                    docker run -d --name airbank-be -p 8080:8080 airbank-be-image
+                """
+            }
+        }
+    }
+}
+
